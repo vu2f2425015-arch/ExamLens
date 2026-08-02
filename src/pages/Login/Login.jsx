@@ -55,7 +55,6 @@ export default function Login() {
           <span className={styles.chip}>[ DESK: SECURE ]</span>
           <span className={styles.chip}>[ PROCTORING ENGINE: OPERATIONAL ]</span>
           <span className={styles.chip}>[ SESSION: TERM II ]</span>
-          <ThemeToggle />
         </div>
       </div>
 
