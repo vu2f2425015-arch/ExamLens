@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import ThemeToggle from '../../components/ThemeToggle/ThemeToggle';
 import styles from './Login.module.css';
 import {
   MdSecurity, MdPerson, MdLock, MdAdminPanelSettings,
@@ -35,6 +36,11 @@ export default function Login() {
 
   return (
     <div className={styles.page}>
+      {/* Top Bar Theme Toggle */}
+      <div className={styles.topBar}>
+        <ThemeToggle />
+      </div>
+
       {/* Institutional Pattern Accent Background */}
       <div className={styles.bg} />
 
@@ -49,6 +55,7 @@ export default function Login() {
           <span className={styles.chip}>[ DESK: SECURE ]</span>
           <span className={styles.chip}>[ PROCTORING ENGINE: OPERATIONAL ]</span>
           <span className={styles.chip}>[ SESSION: TERM II ]</span>
+          <ThemeToggle />
         </div>
       </div>
 
