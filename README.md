@@ -1,12 +1,17 @@
 # ExamLens — University Examination & Proctoring Authority Portal
 
+[![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-8.1-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
+[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+[![Theme](https://img.shields.io/badge/Theme-Light%20%2F%20Dark-1E2B37)](https://github.com/vu2f2425015-arch/ExamLens)
+
 **ExamLens** is an institutional-grade, AI-powered online examination and automated proctoring platform designed for university examination boards, proctors, and student candidates.
 
 Built with an authoritative academic visual register, ExamLens pairs archival paper aesthetics, crisp typography, and institutional telemetry with real-time proctoring features, live monitoring desks, and full light/dark theme support.
 
 ---
 
-## ✨ Features
+## ✨ Key Features
 
 - **🎓 Dual Entrance Desk**: Dedicated candidate entrance and proctor desk sign-in with roll number authentication.
 - **🛡️ Real-Time AI Proctoring Desk**: Automated multi-face detection, phone/object detection, audio volume anomaly telemetry, and proctor warning dispatch.
@@ -15,6 +20,15 @@ Built with an authoritative academic visual register, ExamLens pairs archival pa
 - **📄 Official Academic Transcript**: Exam completion results view with verified grade stamps (`[ RESULT: SATISFACTORY / PASSED ]`), category breakdowns, and performance analytics.
 - **🌗 Complete Institutional Light & Dark Themes**: Fully tokenized CSS design system with instant toggle, `localStorage` persistence, and OS preference auto-detection.
 - **♿ Accessibility & Reduced Motion**: Full `:focus-visible` outline rings for keyboard navigation and `@media (prefers-reduced-motion)` support.
+
+---
+
+## 🔑 Demo Access Credentials
+
+| Role | Email / ID | Password | Access Rights |
+| :--- | :--- | :--- | :--- |
+| **Administrator / Proctor** | `admin@university.edu` | `admin123` | Proctoring Desk, Live Streams, AI Anomaly Feed, Exam Setup, Student Vault |
+| **Student Candidate** | `student@university.edu` | `student123` | Candidate Portal, Scheduled Exams, Exam Sitting Desk, Transcripts |
 
 ---
 
@@ -44,30 +58,30 @@ Built with an authoritative academic visual register, ExamLens pairs archival pa
 
 ### Prerequisites
 
-Ensure you have **Node.js** (v18+ recommended) installed.
+Ensure you have **Node.js** (v18+ recommended) installed on your system.
 
-### Installation & Development
+### Installation & Local Setup
 
 ```bash
-# Clone the repository
-git clone https://github.com/YOUR_USERNAME/examlens-frontend.git
+# 1. Clone the repository
+git clone https://github.com/vu2f2425015-arch/ExamLens.git
 
-# Navigate into the project folder
-cd examlens-frontend
+# 2. Navigate into the project directory
+cd ExamLens
 
-# Install dependencies
+# 3. Install dependencies
 npm install
 
-# Start local development server
+# 4. Launch the local development server
 npm run dev
 ```
 
-Open [http://localhost:5173](http://localhost:5173) in your browser.
+Open your browser and navigate to **`http://localhost:5173`**.
 
 ### Building for Production
 
 ```bash
-# Build production bundle
+# Create optimized production build
 npm run build
 
 # Preview production build locally
@@ -79,33 +93,38 @@ npm run preview
 ## 📁 Project Structure
 
 ```
-src/
-├── components/          # Shared institutional UI components
-│   ├── AIStatusBadge/   # Official rectangular status stamps
-│   ├── ActivityLog/     # Real-time proctoring audit ledger
-│   ├── ChartCard/       # Paper card wrapper for Recharts
-│   ├── DashboardCard/   # Ruled metric cards
-│   ├── LiveChat/        # Proctor-candidate messaging desk
-│   ├── Navbar/          # Top navigation bar with status ticker
-│   ├── QuestionPalette/ # Candidate answer sheet palette
-│   ├── Sidebar/         # Oxford slate / Dark navy authority navigation
-│   ├── ThemeToggle/     # Light / Dark mode sliding pill toggle
-│   ├── WarningPopup/    # Official proctoring notice paper popup
-│   └── WebcamPanel/     # Video monitor overlay with face detection grid
-├── context/             # React contexts (AuthContext, ThemeContext)
-├── data/                # Mock exam datasets, questions, alerts, students
-├── hooks/               # Custom hooks (useAIProctor, useExamState, useTimer)
-├── pages/
-│   ├── Admin/           # Admin & Proctor dashboard views
-│   ├── Exam/            # Exam sitting flow (Instructions, ExamInterface, Results)
-│   ├── Login/           # Dual candidate & proctor login entrance desk
-│   └── Student/         # Student portal (Dashboard, MyExams, Results, Profile)
-├── styles/              # Global CSS design tokens (globals.css)
-└── utils/              # Helper utilities and formatters
+ExamLens/
+├── public/              # Static assets (favicons, system SVG icons)
+├── src/
+│   ├── components/      # Shared institutional UI components
+│   │   ├── AIStatusBadge/   # Official rectangular status stamps
+│   │   ├── ActivityLog/     # Real-time proctoring audit ledger
+│   │   ├── ChartCard/       # Paper card wrapper for Recharts
+│   │   ├── DashboardCard/   # Ruled metric cards
+│   │   ├── LiveChat/        # Proctor-candidate messaging desk
+│   │   ├── Navbar/          # Top navigation bar with status ticker
+│   │   ├── QuestionPalette/ # Candidate answer sheet palette
+│   │   ├── Sidebar/         # Oxford slate / Dark navy authority navigation
+│   │   ├── ThemeToggle/     # Light / Dark mode sliding pill toggle
+│   │   ├── WarningPopup/    # Official proctoring notice paper popup
+│   │   └── WebcamPanel/     # Video monitor overlay with face detection grid
+│   ├── context/         # React contexts (AuthContext, ThemeContext)
+│   ├── data/            # Mock exam datasets, questions, alerts, students
+│   ├── hooks/           # Custom hooks (useAIProctor, useExamState, useTimer)
+│   ├── pages/
+│   │   ├── Admin/       # Admin & Proctor dashboard views
+│   │   ├── Exam/        # Exam sitting flow (Instructions, ExamInterface, Results)
+│   │   ├── Login/       # Dual candidate & proctor login entrance desk
+│   │   └── Student/     # Student portal (Dashboard, MyExams, Results, Profile)
+│   ├── styles/          # Global CSS design tokens (globals.css)
+│   └── utils/          # Helper utilities and formatters
+├── index.html           # Main HTML entry point
+├── package.json         # Dependencies and scripts
+└── vite.config.js       # Vite configuration
 ```
 
 ---
 
-## 📄 License
+## 📜 License
 
 Distributed under the MIT License. See `LICENSE` for details.
