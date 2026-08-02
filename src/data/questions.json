@@ -1,0 +1,337 @@
+[
+  {
+    "id": "Q001",
+    "examId": "EX002",
+    "number": 1,
+    "question": "Which of the following is NOT a type of SQL JOIN?",
+    "options": ["INNER JOIN", "OUTER JOIN", "CROSS JOIN", "CIRCULAR JOIN"],
+    "correct": 3,
+    "marks": 3
+  },
+  {
+    "id": "Q002",
+    "examId": "EX002",
+    "number": 2,
+    "question": "What does ACID stand for in database transactions?",
+    "options": [
+      "Atomicity, Consistency, Isolation, Durability",
+      "Accuracy, Consistency, Integrity, Durability",
+      "Atomicity, Correctness, Isolation, Dependability",
+      "Accuracy, Concurrency, Integrity, Durability"
+    ],
+    "correct": 0,
+    "marks": 3
+  },
+  {
+    "id": "Q003",
+    "examId": "EX002",
+    "number": 3,
+    "question": "Which normal form eliminates transitive dependencies?",
+    "options": ["1NF", "2NF", "3NF", "BCNF"],
+    "correct": 2,
+    "marks": 3
+  },
+  {
+    "id": "Q004",
+    "examId": "EX002",
+    "number": 4,
+    "question": "A foreign key in a relational table points to:",
+    "options": [
+      "Primary key of the same table",
+      "Primary key of another table",
+      "Unique key of the same table",
+      "Index of another table"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q005",
+    "examId": "EX002",
+    "number": 5,
+    "question": "Which SQL command is used to remove all rows from a table without logging individual row deletions?",
+    "options": ["DELETE", "DROP", "TRUNCATE", "REMOVE"],
+    "correct": 2,
+    "marks": 3
+  },
+  {
+    "id": "Q006",
+    "examId": "EX002",
+    "number": 6,
+    "question": "In an ER diagram, a diamond shape represents:",
+    "options": ["Entity", "Attribute", "Relationship", "Key"],
+    "correct": 2,
+    "marks": 3
+  },
+  {
+    "id": "Q007",
+    "examId": "EX002",
+    "number": 7,
+    "question": "Which of the following is a NoSQL database?",
+    "options": ["MySQL", "PostgreSQL", "MongoDB", "Oracle"],
+    "correct": 2,
+    "marks": 3
+  },
+  {
+    "id": "Q008",
+    "examId": "EX002",
+    "number": 8,
+    "question": "The GROUP BY clause in SQL is used to:",
+    "options": [
+      "Sort records in ascending order",
+      "Group rows sharing a property",
+      "Filter records after aggregation",
+      "Join multiple tables"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q009",
+    "examId": "EX002",
+    "number": 9,
+    "question": "Which isolation level prevents dirty reads but allows non-repeatable reads?",
+    "options": ["Read Uncommitted", "Read Committed", "Repeatable Read", "Serializable"],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q010",
+    "examId": "EX002",
+    "number": 10,
+    "question": "An index in a database is primarily used to:",
+    "options": [
+      "Store backup data",
+      "Speed up data retrieval",
+      "Enforce referential integrity",
+      "Manage transactions"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q011",
+    "examId": "EX002",
+    "number": 11,
+    "question": "Which of these is a DDL command?",
+    "options": ["SELECT", "INSERT", "CREATE", "UPDATE"],
+    "correct": 2,
+    "marks": 3
+  },
+  {
+    "id": "Q012",
+    "examId": "EX002",
+    "number": 12,
+    "question": "Deadlock in a database occurs when:",
+    "options": [
+      "A transaction is waiting for a resource held by itself",
+      "Two transactions are waiting for resources held by each other",
+      "A query takes too long to execute",
+      "Too many indexes are created"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q013",
+    "examId": "EX002",
+    "number": 13,
+    "question": "Which SQL aggregate function returns the number of rows?",
+    "options": ["SUM()", "AVG()", "COUNT()", "MAX()"],
+    "correct": 2,
+    "marks": 3
+  },
+  {
+    "id": "Q014",
+    "examId": "EX002",
+    "number": 14,
+    "question": "The HAVING clause is used with:",
+    "options": ["WHERE", "GROUP BY", "ORDER BY", "JOIN"],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q015",
+    "examId": "EX002",
+    "number": 15,
+    "question": "Which property ensures that once a transaction is committed, it remains so?",
+    "options": ["Atomicity", "Consistency", "Isolation", "Durability"],
+    "correct": 3,
+    "marks": 3
+  },
+  {
+    "id": "Q016",
+    "examId": "EX002",
+    "number": 16,
+    "question": "A view in SQL is:",
+    "options": [
+      "A physical table stored on disk",
+      "A virtual table based on a SELECT query",
+      "A type of index",
+      "A stored procedure"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q017",
+    "examId": "EX002",
+    "number": 17,
+    "question": "Which of the following is TRUE about a primary key?",
+    "options": [
+      "It can contain NULL values",
+      "A table can have multiple primary keys",
+      "It uniquely identifies each row",
+      "It can be duplicated"
+    ],
+    "correct": 2,
+    "marks": 3
+  },
+  {
+    "id": "Q018",
+    "examId": "EX002",
+    "number": 18,
+    "question": "The SQL command to give access privileges to a user is:",
+    "options": ["REVOKE", "GRANT", "ALLOW", "PERMIT"],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q019",
+    "examId": "EX002",
+    "number": 19,
+    "question": "Which type of join returns all records from both tables?",
+    "options": ["LEFT JOIN", "RIGHT JOIN", "INNER JOIN", "FULL OUTER JOIN"],
+    "correct": 3,
+    "marks": 3
+  },
+  {
+    "id": "Q020",
+    "examId": "EX002",
+    "number": 20,
+    "question": "Normalization in databases is done to:",
+    "options": [
+      "Increase data redundancy",
+      "Reduce data redundancy and improve integrity",
+      "Make queries run faster",
+      "Create more indexes"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q021",
+    "examId": "EX002",
+    "number": 21,
+    "question": "Which of the following databases uses a document-based model?",
+    "options": ["MySQL", "MongoDB", "PostgreSQL", "SQLite"],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q022",
+    "examId": "EX002",
+    "number": 22,
+    "question": "The SQL DISTINCT keyword is used to:",
+    "options": [
+      "Return only unique values",
+      "Sort results in descending order",
+      "Filter NULL values",
+      "Join tables"
+    ],
+    "correct": 0,
+    "marks": 3
+  },
+  {
+    "id": "Q023",
+    "examId": "EX002",
+    "number": 23,
+    "question": "Which command is used to modify existing data in a table?",
+    "options": ["ALTER", "MODIFY", "UPDATE", "CHANGE"],
+    "correct": 2,
+    "marks": 3
+  },
+  {
+    "id": "Q024",
+    "examId": "EX002",
+    "number": 24,
+    "question": "A candidate key is:",
+    "options": [
+      "A key that references another table",
+      "Any minimal set of attributes that can uniquely identify a row",
+      "The selected primary key",
+      "A key with NULL values"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q025",
+    "examId": "EX002",
+    "number": 25,
+    "question": "Which SQL clause is used to filter records?",
+    "options": ["ORDER BY", "GROUP BY", "WHERE", "HAVING"],
+    "correct": 2,
+    "marks": 3
+  },
+  {
+    "id": "Q026",
+    "examId": "EX002",
+    "number": 26,
+    "question": "In database design, an entity is:",
+    "options": [
+      "A column in a table",
+      "A real-world object represented in the database",
+      "A relationship between tables",
+      "A constraint on a column"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q027",
+    "examId": "EX002",
+    "number": 27,
+    "question": "What is the result of a CROSS JOIN?",
+    "options": [
+      "Matching rows from both tables",
+      "All possible combinations of rows from both tables",
+      "Rows from the left table only",
+      "Rows where the join condition is NULL"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q028",
+    "examId": "EX002",
+    "number": 28,
+    "question": "Which of the following is a constraint in SQL?",
+    "options": ["SELECT", "NOT NULL", "GROUP BY", "HAVING"],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q029",
+    "examId": "EX002",
+    "number": 29,
+    "question": "The concept of data independence means:",
+    "options": [
+      "Data can be accessed without a query",
+      "Changing data storage does not affect application programs",
+      "Each table is independent of others",
+      "No foreign key constraints are needed"
+    ],
+    "correct": 1,
+    "marks": 3
+  },
+  {
+    "id": "Q030",
+    "examId": "EX002",
+    "number": 30,
+    "question": "Which of the following is an example of a DML command?",
+    "options": ["CREATE", "DROP", "INSERT", "ALTER"],
+    "correct": 2,
+    "marks": 3
+  }
+]

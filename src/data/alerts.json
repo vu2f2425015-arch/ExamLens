@@ -1,0 +1,86 @@
+[
+  {
+    "id": "ALT001",
+    "time": "14:03:22",
+    "studentId": "STU001",
+    "studentName": "Arjun Sharma",
+    "examId": "EX002",
+    "examName": "DBMS",
+    "alert": "Face Lost",
+    "severity": "warning",
+    "screenshot": null,
+    "resolved": false
+  },
+  {
+    "id": "ALT002",
+    "time": "14:05:45",
+    "studentId": "STU002",
+    "studentName": "Priya Mehta",
+    "examId": "EX002",
+    "examName": "DBMS",
+    "alert": "Multiple Faces Detected",
+    "severity": "critical",
+    "screenshot": null,
+    "resolved": false
+  },
+  {
+    "id": "ALT003",
+    "time": "14:08:10",
+    "studentId": "STU004",
+    "studentName": "Sneha Patel",
+    "examId": "EX002",
+    "examName": "DBMS",
+    "alert": "Tab Switch Attempt",
+    "severity": "danger",
+    "screenshot": null,
+    "resolved": true
+  },
+  {
+    "id": "ALT004",
+    "time": "14:11:33",
+    "studentId": "STU001",
+    "studentName": "Arjun Sharma",
+    "examId": "EX002",
+    "examName": "DBMS",
+    "alert": "Looking Away",
+    "severity": "warning",
+    "screenshot": null,
+    "resolved": false
+  },
+  {
+    "id": "ALT005",
+    "time": "14:15:20",
+    "studentId": "STU006",
+    "studentName": "Ananya Roy",
+    "examId": "EX002",
+    "examName": "DBMS",
+    "alert": "Phone Detected",
+    "severity": "danger",
+    "screenshot": null,
+    "resolved": false
+  },
+  {
+    "id": "ALT006",
+    "time": "14:18:05",
+    "studentId": "STU003",
+    "studentName": "Rahul Verma",
+    "examId": "EX002",
+    "examName": "DBMS",
+    "alert": "Noise Detected",
+    "severity": "low",
+    "screenshot": null,
+    "resolved": true
+  },
+  {
+    "id": "ALT007",
+    "time": "14:22:44",
+    "studentId": "STU008",
+    "studentName": "Divya Krishnan",
+    "examId": "EX002",
+    "examName": "DBMS",
+    "alert": "Camera Disabled",
+    "severity": "critical",
+    "screenshot": null,
+    "resolved": false
+  }
+]

@@ -1,0 +1,73 @@
+/* Theme toggle pill — sits in Navbar */
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: transparent;
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-sm);
+  padding: 0.3rem 0.65rem;
+  cursor: pointer;
+  color: var(--text-body);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  transition: border-color var(--transition-fast), background var(--transition-fast), color var(--transition-fast);
+  white-space: nowrap;
+}
+
+.toggle:hover {
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+  color: var(--text-ink);
+}
+
+.toggle:focus-visible {
+  outline: 2px solid var(--primary-slate);
+  outline-offset: 2px;
+}
+
+/* Sliding track */
+.track {
+  position: relative;
+  width: 36px;
+  height: 20px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-rule);
+  border-radius: 10px;
+  display: inline-block;
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+/* Thumb */
+.thumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  border-radius: 7px;
+  background: var(--primary-slate);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: left var(--transition-fast), background var(--transition-fast);
+}
+
+.thumbDark {
+  left: calc(100% - 16px);
+  background: var(--stamp-ochre);
+}
+
+.icon {
+  font-size: 9px;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.label {
+  color: var(--text-muted);
+}

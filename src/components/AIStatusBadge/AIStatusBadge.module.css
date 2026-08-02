@@ -1,0 +1,41 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  border: 1px solid transparent;
+}
+
+.large {
+  padding: 0.4rem 0.95rem;
+  font-size: 0.825rem;
+}
+
+.icon { font-size: 0.95rem; }
+
+/* Normal */
+.normal {
+  background: var(--stamp-green-bg);
+  border-color: var(--stamp-green-border);
+  color: var(--stamp-green);
+}
+
+/* Warning */
+.warning {
+  background: var(--stamp-ochre-bg);
+  border-color: var(--stamp-ochre-border);
+  color: var(--stamp-ochre);
+}
+
+/* Critical */
+.critical {
+  background: var(--stamp-red-bg);
+  border-color: var(--stamp-red-border);
+  color: var(--stamp-red);
+}

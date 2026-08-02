@@ -1,0 +1,104 @@
+.examGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1rem;
+}
+
+.examCard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-left: 4px solid var(--primary-slate);
+  border-radius: var(--radius-sm);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.examHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.examIcon {
+  width: 36px;
+  height: 36px;
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--primary-slate);
+  font-size: 1.15rem;
+}
+
+.examName {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-ink);
+}
+
+.examSubject {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.examDesc {
+  font-size: 0.825rem;
+  color: var(--text-body);
+  line-height: 1.45;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.examMeta {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.metaItem {
+  background: var(--surface-subtle);
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.55rem;
+  border: 1px solid var(--border-rule);
+}
+
+.metaKey {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 0.15rem;
+}
+
+.metaVal {
+  font-family: var(--font-mono);
+  font-size: 0.825rem;
+  font-weight: 700;
+  color: var(--text-ink);
+}
+
+.examProgress { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.progressLabel {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--text-muted);
+}
+
+.examActions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: auto;
+}

@@ -1,0 +1,156 @@
+.welcome {
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-left: 5px solid var(--primary-slate);
+  border-radius: var(--radius-sm);
+  padding: 1.35rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.welcomeLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.welcomeAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: var(--radius-sm);
+  background: var(--primary-slate);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.welcomeText {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.welcomeName {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text-ink);
+  font-family: var(--font-display);
+}
+
+.welcomeSub {
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+@media (max-width: 1000px) {
+  .statsGrid { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* Active Alert */
+.activeAlert {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: var(--stamp-green-bg);
+  border: 1px solid var(--stamp-green-border);
+  border-radius: var(--radius-sm);
+  padding: 0.85rem 1.15rem;
+}
+
+.alertDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--stamp-green);
+  flex-shrink: 0;
+}
+
+.alertTitle {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--stamp-green);
+}
+
+.alertSub {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.sectionTitle {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-ink);
+  margin-bottom: 1rem;
+  font-family: var(--font-display);
+}
+
+.examGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.examCard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-sm);
+  padding: 1.15rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.examCardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.examDuration {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+.examName {
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-ink);
+}
+
+.examFaculty {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.examDate {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--primary-slate);
+}
