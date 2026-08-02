@@ -9,6 +9,18 @@
   position: relative;
 }
 
+.topBar {
+  position: fixed;
+  top: 1.25rem;
+  right: 1.5rem;
+  z-index: 999;
+  background: var(--surface-card);
+  padding: 0.25rem 0.5rem;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-rule);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Academic Paper Rule Background Accent */
 .bg {
   position: fixed;
@@ -110,7 +122,7 @@
 }
 
 .adminCard {
-  background: #FAF9F6;
+  background: var(--surface-card);
 }
 
 /* Card Header */
