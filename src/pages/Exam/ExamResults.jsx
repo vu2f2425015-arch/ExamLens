@@ -1,6 +1,7 @@
 import { useLocation, useNavigate } from 'react-router-dom';
 import styles from './ExamResults.module.css';
 import { getGrade } from '../../utils/formatters';
+import { useTheme } from '../../context/ThemeContext';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import {
   MdCheckCircle, MdCancel, MdTimer, MdEmojiEvents,
@@ -10,6 +11,18 @@ import {
 export default function ExamResults() {
   const { state } = useLocation();
   const navigate = useNavigate();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
+
+  const customTooltipStyle = {
+    backgroundColor: isDark ? '#132032' : '#FFFFFF',
+    border: `1px solid ${isDark ? '#2D425C' : '#D9D7CE'}`,
+    borderRadius: '6px',
+    color: isDark ? '#F8FAFC' : '#0F2042',
+    fontSize: '0.8rem',
+    fontFamily: 'IBM Plex Mono, monospace',
+    boxShadow: isDark ? '0 4px 16px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.08)'
+  };
 
   const score        = state?.score        ?? 76;
   const totalMarks   = state?.totalMarks   ?? 100;
@@ -107,10 +120,10 @@ export default function ExamResults() {
           <div className={styles.chartRow}>
             <ResponsiveContainer width={160} height={160}>
               <PieChart>
-                <Pie data={pieData} cx="50%" cy="50%" outerRadius={70} innerRadius={35} paddingAngle={2} dataKey="value">
+                <Pie data={pieData} cx="50%" cy="50%" outerRadius={70} innerRadius={35} paddingAngle={2} dataKey="value" stroke={isDark ? '#132032' : '#FFFFFF'} strokeWidth={1}>
                   {pieData.map((d, i) => <Cell key={i} fill={d.fill} />)}
                 </Pie>
-                <Tooltip contentStyle={{ background: '#FFFFFF', border: '1px solid #D9D7CE', borderRadius: 4, fontFamily: 'IBM Plex Mono', fontSize: '0.8rem' }} />
+                <Tooltip contentStyle={customTooltipStyle} />
               </PieChart>
             </ResponsiveContainer>
             <div className={styles.legend}>

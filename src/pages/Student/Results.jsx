@@ -2,6 +2,7 @@ import Navbar from '../../components/Navbar/Navbar';
 import styles from './Results.module.css';
 import results from '../../data/results.json';
 import { useAuth } from '../../context/AuthContext';
+import { useTheme } from '../../context/ThemeContext';
 import { formatDate, getGrade } from '../../utils/formatters';
 import { MdDownload, MdEmojiEvents, MdCheckCircle, MdCancel, MdTimer } from 'react-icons/md';
 import { motion } from 'framer-motion';
@@ -9,7 +10,19 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 
 export default function Results() {
   const { user } = useAuth();
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
   const myResults = results.filter(r => r.studentId === user?.id);
+
+  const customTooltipStyle = {
+    backgroundColor: isDark ? '#132032' : '#FFFFFF',
+    border: `1px solid ${isDark ? '#2D425C' : '#D9D7CE'}`,
+    borderRadius: '6px',
+    color: isDark ? '#F8FAFC' : '#0F2042',
+    fontSize: '0.75rem',
+    fontFamily: 'IBM Plex Mono, monospace',
+    boxShadow: isDark ? '0 4px 16px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.08)'
+  };
 
   if (myResults.length === 0) {
     return (
@@ -82,10 +95,10 @@ export default function Results() {
                 <div className={styles.chartRow}>
                   <ResponsiveContainer width={90} height={90}>
                     <PieChart>
-                      <Pie data={pieData} cx="50%" cy="50%" outerRadius={40} innerRadius={22} paddingAngle={2} dataKey="value">
+                      <Pie data={pieData} cx="50%" cy="50%" outerRadius={40} innerRadius={22} paddingAngle={2} dataKey="value" stroke={isDark ? '#132032' : '#FFFFFF'} strokeWidth={1}>
                         {pieData.map((d, j) => <Cell key={j} fill={d.color} />)}
                       </Pie>
-                      <Tooltip formatter={(v, n) => [v, n]} contentStyle={{ background: '#1E293B', border: 'none', borderRadius: 8, fontSize: '0.75rem' }} />
+                      <Tooltip formatter={(v, n) => [v, n]} contentStyle={customTooltipStyle} />
                     </PieChart>
                   </ResponsiveContainer>
                   <div className={styles.statsGrid}>
