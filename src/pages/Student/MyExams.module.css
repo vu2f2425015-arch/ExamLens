@@ -44,9 +44,6 @@
 }
 
 .activePulse {
-  position: absolute;
-  top: 0.85rem;
-  right: 0.85rem;
   display: flex;
   align-items: center;
   gap: 0.35rem;
@@ -66,6 +63,12 @@
   height: 6px;
   border-radius: 50%;
   background: var(--stamp-green);
+  animation: pulseDot 1.8s infinite ease-in-out;
+}
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.3; transform: scale(0.75); }
 }
 
 .cardTop {
