@@ -45,21 +45,20 @@ export default function MyExams() {
               transition={{ delay: i * 0.06 }}
               whileHover={{ y: -4 }}
             >
-              {exam.status === 'active' && (
-                <div className={styles.activePulse}>
-                  <div className={styles.activeDot} />
-                  LIVE
-                </div>
-              )}
-
               <div className={styles.cardTop}>
                 <div className={styles.icon}><MdQuiz /></div>
-                <span className={`badge ${
-                  exam.status === 'active' ? 'badge-accent' :
-                  exam.status === 'upcoming' ? 'badge-info' : 'badge-muted'
-                }`}>
-                  {exam.status}
-                </span>
+                {exam.status === 'active' ? (
+                  <div className={styles.activePulse}>
+                    <div className={styles.activeDot} />
+                    LIVE
+                  </div>
+                ) : (
+                  <span className={`badge ${
+                    exam.status === 'upcoming' ? 'badge-info' : 'badge-muted'
+                  }`}>
+                    {exam.status}
+                  </span>
+                )}
               </div>
 
               <h3 className={styles.examName}>{exam.name}</h3>
