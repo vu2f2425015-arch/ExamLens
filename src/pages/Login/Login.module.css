@@ -287,3 +287,92 @@
   .studentCard { border-right: none; border-bottom: 1px solid var(--border-rule); }
   .divider { display: none; }
 }
+
+/* Student Account Activation UI Styles */
+.activationPrompt {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px dashed var(--border-rule);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+}
+
+.activateLink {
+  background: none;
+  border: none;
+  color: var(--stamp-green);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+.activateLink:hover {
+  color: var(--text-ink);
+}
+
+.backBtn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.8rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0;
+  margin-bottom: 0.5rem;
+}
+.backBtn:hover {
+  color: var(--text-ink);
+}
+
+.studentBadge {
+  background: var(--stamp-green-bg);
+  border: 1px solid var(--stamp-green-border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.5rem;
+}
+
+.badgeHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--stamp-green);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.2rem;
+}
+
+.badgeName {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-ink);
+}
+
+.badgeMeta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+.successAlert {
+  background: var(--stamp-green-bg);
+  border: 1px solid var(--stamp-green-border);
+  border-radius: var(--radius-sm);
+  padding: 0.65rem 0.85rem;
+  font-size: 0.82rem;
+  color: var(--stamp-green);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-weight: 500;
+}
+
