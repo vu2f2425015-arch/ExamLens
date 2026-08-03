@@ -1,0 +1,192 @@
+.container {
+  display: flex;
+  gap: 1.25rem;
+  width: 100%;
+  margin-top: 1.5rem;
+}
+
+.heroSlot {
+  flex: 0 0 65%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.thumbnailsSlot {
+  flex: 0 0 calc(35% - 1.25rem);
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+/* Card base styling */
+.chartCard {
+  background: var(--surface-card, #ffffff);
+  border: 1px solid var(--border-rule, #d9d7ce);
+  border-radius: var(--radius-sm, 6px);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm, 0 1px 3px rgba(0,0,0,0.05));
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  position: relative;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.heroCard {
+  height: 100%;
+  min-height: 420px;
+  border-color: var(--border-focus, #1e2b37);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.thumbnailCard {
+  cursor: pointer;
+  height: 130px;
+  user-select: none;
+}
+
+.thumbnailCard:hover {
+  border-color: var(--color-primary, #1e2b37);
+  box-shadow: 0 4px 12px rgba(15, 32, 66, 0.12);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid var(--border-rule, #d9d7ce);
+  background: var(--surface-subtle, #f7f6f2);
+}
+
+.heroHeader {
+  padding: 0.9rem 1.2rem;
+}
+
+.titleGroup {
+  display: flex;
+  flex-direction: column;
+}
+
+.title {
+  font-family: var(--font-display, 'IBM Plex Sans', sans-serif);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text-ink, #0f2042);
+  line-height: 1.2;
+}
+
+.heroTitle {
+  font-size: 1.1rem;
+}
+
+.subtitle {
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+  font-size: 0.75rem;
+  color: var(--text-muted, #5c6a79);
+  margin-top: 0.15rem;
+}
+
+.badgeFeatured {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  background: rgba(30, 43, 55, 0.08);
+  color: #1e2b37;
+  padding: 0.25rem 0.55rem;
+  border-radius: 4px;
+  border: 1px solid rgba(30, 43, 55, 0.2);
+}
+
+.statBadge {
+  display: inline-flex;
+  align-items: center;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  font-weight: 600;
+  background: var(--surface-card, #ffffff);
+  color: var(--text-ink, #0f2042);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  border: 1px solid var(--border-rule, #d9d7ce);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.cardBody {
+  padding: 0.85rem 1rem;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.heroBody {
+  padding: 1.2rem;
+  height: 350px;
+}
+
+.thumbnailBody {
+  padding: 0.5rem 0.85rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.miniChartWrapper {
+  flex: 1;
+  height: 65px;
+  min-width: 0;
+  pointer-events: none; /* Let clicks pass to the card */
+}
+
+.thumbnailClickHint {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--text-muted, #707d8d);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.thumbnailCard:hover .thumbnailClickHint {
+  opacity: 1;
+}
+
+/* Mobile & Tablet Responsive Viewport (< 900px) */
+@media (max-width: 900px) {
+  .container {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .heroSlot {
+    flex: 1 1 100%;
+    width: 100%;
+  }
+
+  .thumbnailsSlot {
+    flex: 1 1 100%;
+    width: 100%;
+    flex-direction: row;
+    overflow-x: auto;
+    padding-bottom: 0.5rem;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .thumbnailCard {
+    flex: 0 0 280px;
+    scroll-snap-align: start;
+    height: 130px;
+  }
+}
