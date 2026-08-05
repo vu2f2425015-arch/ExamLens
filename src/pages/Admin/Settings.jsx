@@ -3,7 +3,8 @@ import Navbar from '../../components/Navbar/Navbar';
 import ChartCard from '../../components/ChartCard/ChartCard';
 import styles from './Settings.module.css';
 import { useAuth } from '../../context/AuthContext';
-import { saveDocument } from '../../services/firebaseService';
+import { saveDocument, saveLocalStorageStudents } from '../../services/firebaseService';
+import { isFirebaseConfigured } from '../../config/firebase';
 import {
   MdSave,
   MdSecurity,
@@ -74,8 +75,8 @@ export default function Settings() {
 
           for (let i = 1; i < lines.length; i++) {
             const cols = lines[i].split(',').map((c) => c.trim().replace(/^["']|["']$/g, ''));
-            if (cols.length >= 3) {
-              const rollNumber = cols[headers.indexOf('rollnumber')] || cols[0] || `STU${100 + i}`;
+            if (cols.length >= 2) {
+              const rollNumber = (cols[headers.indexOf('rollnumber')] || cols[0] || `STU${100 + i}`).toUpperCase();
               const name = cols[headers.indexOf('name')] || cols[1] || 'Unknown Student';
               const email = cols[headers.indexOf('email')] || cols[2] || `${rollNumber.toLowerCase()}@examlens.edu`;
               const department = cols[headers.indexOf('department')] || cols[3] || 'Computer Science';
@@ -83,7 +84,8 @@ export default function Settings() {
               const gpa = cols[headers.indexOf('gpa')] || cols[5] || '8.0';
 
               students.push({
-                rollNumber: rollNumber.toUpperCase(),
+                id: `STU_${rollNumber}`,
+                rollNumber: rollNumber,
                 name,
                 email,
                 department,
@@ -98,7 +100,7 @@ export default function Settings() {
           setParsedStudents(students);
           setUploadStatus({
             type: 'success',
-            msg: `Successfully parsed ${students.length} student records from CSV file.`,
+            msg: `Successfully parsed ${students.length} student records from CSV file. Click "Import Records into Database" to save.`,
           });
         } catch (err) {
           setUploadStatus({ type: 'error', msg: 'Failed to parse CSV file: ' + err.message });
@@ -110,32 +112,72 @@ export default function Settings() {
       setParsedStudents([]);
       setUploadStatus({
         type: 'success',
-        msg: `PDF document "${file.name}" attached. Click "Import & Process PDF" to register records into database.`,
+        msg: `PDF document "${file.name}" attached. Click "Import & Process PDF" to register document into database.`,
       });
     }
   };
 
-  // Execute Import into System / Firestore
+  // Execute Import into System & Firestore
   const handleImport = async () => {
     if (!uploadedFile) return;
     setIsProcessing(true);
 
     try {
       if (uploadedFile.type === 'csv') {
-        let count = 0;
-        for (const stu of parsedStudents) {
-          await saveDocument('students', stu.rollNumber, stu);
-          count++;
+        if (parsedStudents.length === 0) {
+          setUploadStatus({ type: 'error', msg: 'No valid student rows found in CSV.' });
+          setIsProcessing(false);
+          return;
         }
+
+        // 1. Immediately save to LocalStorage and memory roster
+        saveLocalStorageStudents(parsedStudents);
+
+        // 2. Sync to Cloud Firestore if Firebase is configured (non-blocking parallel writes)
+        let syncedToCloud = false;
+        if (isFirebaseConfigured()) {
+          try {
+            const savePromises = parsedStudents.map((stu) =>
+              saveDocument('students', stu.rollNumber, stu)
+            );
+            const results = await Promise.allSettled(savePromises);
+            const successCount = results.filter((r) => r.status === 'fulfilled' && r.value === true).length;
+            if (successCount > 0) syncedToCloud = true;
+          } catch (cloudErr) {
+            console.warn('[Cloud Sync Notice] Firestore sync timed out or skipped:', cloudErr);
+          }
+        }
+
         setUploadStatus({
           type: 'success',
-          msg: `Successfully imported ${count} student records into database system!`,
+          msg: `Successfully imported ${parsedStudents.length} student records into database system! ${
+            syncedToCloud ? '(Synced to Cloud Firestore)' : '(Saved to Local Database)'
+          }`,
         });
       } else {
-        // PDF Processing
+        // PDF Document Processing
+        const pdfMeta = {
+          name: uploadedFile.name,
+          size: uploadedFile.size,
+          uploadedAt: new Date().toISOString(),
+          type: 'PDF Document',
+        };
+
+        try {
+          const existingDocs = JSON.parse(localStorage.getItem('examlens_custom_documents') || '[]');
+          existingDocs.push(pdfMeta);
+          localStorage.setItem('examlens_custom_documents', JSON.stringify(existingDocs));
+        } catch (e) {
+          console.error('Failed to store PDF metadata:', e);
+        }
+
+        if (isFirebaseConfigured()) {
+          saveDocument('documents', `DOC_${Date.now()}`, pdfMeta).catch(() => {});
+        }
+
         setUploadStatus({
           type: 'success',
-          msg: `PDF document "${uploadedFile.name}" processed and archived in university student vault.`,
+          msg: `PDF document "${uploadedFile.name}" registered and archived in university student vault!`,
         });
       }
     } catch (err) {
@@ -299,7 +341,7 @@ export default function Settings() {
                   onClick={handleImport}
                   disabled={!uploadedFile || isProcessing}
                 >
-                  <MdSave /> {isProcessing ? 'Processing...' : 'Import Records into Database'}
+                  <MdSave /> {isProcessing ? 'Processing Import...' : 'Import Records into Database'}
                 </button>
                 <button className="btn btn-secondary btn-sm" onClick={downloadSampleCSV}>
                   <MdDownload /> Download Sample CSV
