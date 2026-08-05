@@ -1,9 +1,10 @@
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
+import { doc, getDoc, setDoc } from 'firebase/firestore';
+import { auth, db, isFirebaseConfigured } from '../config/firebase.js';
 import { studentRoster, markStudentActivated } from './students.js';
 
 /**
- * Mock Firebase Auth user credentials store.
- * NOTE: Plaintext password storage is used in mock layer ONLY.
- * In production: This is replaced by Firebase Auth (createUserWithEmailAndPassword / signInWithEmailAndPassword).
+ * Local memory credentials store for mock layer mode.
  */
 const studentCredentials = {};
 
@@ -23,22 +24,61 @@ function validatePassword(password) {
 
 /**
  * Activates student account and registers credentials.
- * In production: Swapped for Firebase Auth `createUserWithEmailAndPassword(auth, email, password)`
- * plus Firestore update `updateDoc(doc(db, "students", rollNumber), { activated: true })`.
+ * If Firebase is configured, uses Firebase Auth + Cloud Firestore.
+ * Fallback to local memory roster if Firebase keys are not configured.
  *
  * @param {string} rollNumber - Student roll number
  * @param {string} password - Chosen password
  * @returns {Promise<{ success: boolean, student: object }>}
  */
 export async function activateStudent(rollNumber, password) {
-  // Return Promise to match future Firebase Auth createUserWithEmailAndPassword signature
-  await new Promise((resolve) => setTimeout(resolve, 50));
-
   if (!rollNumber) {
     throw new Error('Roll number is required.');
   }
 
   const cleanRoll = rollNumber.trim().toUpperCase();
+
+  if (!validatePassword(password)) {
+    throw new Error('Password must be at least 8 characters long and contain at least one number.');
+  }
+
+  // --- LIVE FIREBASE BRANCH ---
+  if (isFirebaseConfigured() && auth && db) {
+    // Fetch student document from Firestore
+    const studentDocRef = doc(db, 'students', cleanRoll);
+    let studentSnap = await getDoc(studentDocRef);
+    let record = studentSnap.exists() ? studentSnap.data() : studentRoster[cleanRoll];
+
+    if (!record) {
+      throw new Error('Student record not found in university roster.');
+    }
+
+    if (record.activated) {
+      throw new Error('Account is already activated. Double activation is not allowed.');
+    }
+
+    try {
+      // Create user account in Firebase Auth
+      await createUserWithEmailAndPassword(auth, record.email.toLowerCase(), password);
+
+      // Update Firestore document activation status
+      const updatedStudent = { ...record, activated: true, rollNumber: cleanRoll };
+      await setDoc(studentDocRef, updatedStudent, { merge: true });
+
+      return {
+        success: true,
+        student: updatedStudent,
+      };
+    } catch (firebaseErr) {
+      if (firebaseErr.code === 'auth/email-already-in-use') {
+        throw new Error('Account is already activated or email is registered in Firebase.');
+      }
+      throw new Error(firebaseErr.message || 'Firebase activation failed.');
+    }
+  }
+
+  // --- LOCAL MOCK FALLBACK BRANCH ---
+  await new Promise((resolve) => setTimeout(resolve, 50));
   const record = studentRoster[cleanRoll];
 
   if (!record) {
@@ -49,15 +89,10 @@ export async function activateStudent(rollNumber, password) {
     throw new Error('Account is already activated. Double activation is not allowed.');
   }
 
-  if (!validatePassword(password)) {
-    throw new Error('Password must be at least 8 characters long and contain at least one number.');
-  }
-
   // Mark record activated in roster
   await markStudentActivated(cleanRoll);
 
   // Store credential entry in mock authentication layer
-  // NOTE: Plaintext storage in mock. Replaced by Firebase Auth createUserWithEmailAndPassword in production.
   studentCredentials[cleanRoll] = {
     rollNumber: cleanRoll,
     email: record.email.toLowerCase(),
@@ -72,16 +107,13 @@ export async function activateStudent(rollNumber, password) {
 
 /**
  * Authenticates student credentials during sign in.
- * In production: Swapped for Firebase Auth `signInWithEmailAndPassword(auth, email, password)`.
+ * Uses Firebase Auth + Firestore when configured, or local roster fallback.
  *
  * @param {string} rollNumberOrEmail - Roll number or email
  * @param {string} password - Account password
  * @returns {Promise<object>} User payload object on successful authentication
  */
 export async function authenticateStudent(rollNumberOrEmail, password) {
-  // Return Promise to match future Firebase Auth signInWithEmailAndPassword signature
-  await new Promise((resolve) => setTimeout(resolve, 50));
-
   if (!rollNumberOrEmail || !password) {
     throw new Error('Please enter both student ID/email and password.');
   }
@@ -90,7 +122,70 @@ export async function authenticateStudent(rollNumberOrEmail, password) {
   const lowerInput = cleanInput.toLowerCase();
   const upperInput = cleanInput.toUpperCase();
 
-  // Look up student in roster by rollNumber or email
+  // --- LIVE FIREBASE BRANCH ---
+  if (isFirebaseConfigured() && auth && db) {
+    // Resolve email address if roll number was provided
+    let emailToAuth = lowerInput;
+    let rollNumber = upperInput;
+
+    if (!cleanInput.includes('@')) {
+      const studentDocRef = doc(db, 'students', upperInput);
+      const studentSnap = await getDoc(studentDocRef);
+      if (studentSnap.exists()) {
+        const data = studentSnap.data();
+        emailToAuth = data.email;
+        rollNumber = data.rollNumber || upperInput;
+      } else if (studentRoster[upperInput]) {
+        emailToAuth = studentRoster[upperInput].email;
+      }
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
+      const firebaseUser = userCredential.user;
+
+      // Fetch full profile from Firestore
+      let profileDoc = await getDoc(doc(db, 'students', rollNumber));
+      let profile = profileDoc.exists() ? profileDoc.data() : null;
+
+      if (!profile) {
+        profile = Object.values(studentRoster).find(
+          (s) => s.email.toLowerCase() === emailToAuth.toLowerCase()
+        ) || {
+          name: firebaseUser.displayName || 'Student Candidate',
+          email: firebaseUser.email,
+          rollNumber: rollNumber,
+          department: 'Computer Science',
+          semester: 5,
+        };
+      }
+
+      return {
+        id: profile.id || firebaseUser.uid,
+        name: profile.name,
+        email: profile.email || firebaseUser.email,
+        role: 'student',
+        department: profile.department,
+        semester: profile.semester,
+        rollNumber: profile.rollNumber || rollNumber,
+        avatar: firebaseUser.photoURL || null,
+        uid: firebaseUser.uid,
+      };
+    } catch (firebaseErr) {
+      if (
+        firebaseErr.code === 'auth/wrong-password' ||
+        firebaseErr.code === 'auth/user-not-found' ||
+        firebaseErr.code === 'auth/invalid-credential'
+      ) {
+        throw new Error('Invalid credentials. Please verify your email/roll number and password.');
+      }
+      throw new Error(firebaseErr.message || 'Firebase authentication failed.');
+    }
+  }
+
+  // --- LOCAL MOCK FALLBACK BRANCH ---
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
   const record = Object.values(studentRoster).find(
     (s) => s.rollNumber.toUpperCase() === upperInput || s.email.toLowerCase() === lowerInput
   );
@@ -99,14 +194,12 @@ export async function authenticateStudent(rollNumberOrEmail, password) {
     throw new Error('Invalid credentials. Account not found.');
   }
 
-  // Account must be activated before sign in is allowed
   if (!record.activated) {
     throw new Error('Account is not activated yet. Please activate your account first.');
   }
 
   const cred = studentCredentials[record.rollNumber];
 
-  // NOTE: Plaintext comparison in mock layer. Replaced by Firebase Auth signInWithEmailAndPassword in production.
   if (!cred || cred.password !== password) {
     throw new Error('Invalid credentials. Please try again.');
   }

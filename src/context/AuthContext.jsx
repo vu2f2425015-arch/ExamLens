@@ -1,4 +1,6 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
+import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
+import { auth, isFirebaseConfigured } from '../config/firebase';
 import { authenticateStudent } from '../data/authService';
 
 const AuthContext = createContext(null);
@@ -48,13 +50,39 @@ export function AuthProvider({ children }) {
     }
   });
 
+  // Sync auth state changes with sessionStorage
   useEffect(() => {
     sessionStorage.setItem('examlens_auth', JSON.stringify(state));
   }, [state]);
 
+  // Subscribe to Firebase Auth changes when Firebase is configured
+  useEffect(() => {
+    if (!isFirebaseConfigured() || !auth) return;
+
+    const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
+      if (firebaseUser) {
+        // If logged in via Firebase Auth, update Context state
+        dispatch({
+          type: 'LOGIN',
+          payload: {
+            role: 'student',
+            user: {
+              id: firebaseUser.uid,
+              uid: firebaseUser.uid,
+              email: firebaseUser.email,
+              name: firebaseUser.displayName || firebaseUser.email.split('@')[0],
+              role: 'student',
+            },
+          },
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   /**
    * Async signIn function for student credentials authentication.
-   * In production: Swapped for Firebase Auth signInWithEmailAndPassword(auth, email, password).
    * Rejects with Error if account is not activated yet or credentials are invalid.
    *
    * @param {string} rollNumberOrEmail
@@ -96,7 +124,14 @@ export function AuthProvider({ children }) {
     return { success: false, error: 'Invalid role' };
   };
 
-  const logout = () => {
+  const logout = async () => {
+    if (isFirebaseConfigured() && auth) {
+      try {
+        await firebaseSignOut(auth);
+      } catch (e) {
+        console.error('[Firebase Auth] Logout error:', e);
+      }
+    }
     dispatch({ type: 'LOGOUT' });
     sessionStorage.removeItem('examlens_auth');
   };
@@ -113,4 +148,3 @@ export function useAuth() {
   if (!ctx) throw new Error('useAuth must be used within AuthProvider');
   return ctx;
 }
-

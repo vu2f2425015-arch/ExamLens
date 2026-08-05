@@ -1,18 +1,20 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import styles from './Students.module.css';
 import students from '../../data/students.json';
 import { getInitials } from '../../utils/formatters';
-import { MdSearch, MdFilterList, MdEdit, MdVisibility, MdPerson } from 'react-icons/md';
+import { MdSearch, MdEdit, MdVisibility, MdPerson, MdFileUpload } from 'react-icons/md';
 
 export default function Students() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
 
-  const filtered = students.filter(s => {
-    const matchQ = s.name.toLowerCase().includes(query.toLowerCase()) ||
-                   s.rollNumber.toLowerCase().includes(query.toLowerCase()) ||
-                   s.department.toLowerCase().includes(query.toLowerCase());
+  const filtered = students.filter((s) => {
+    const matchQ =
+      s.name.toLowerCase().includes(query.toLowerCase()) ||
+      s.rollNumber.toLowerCase().includes(query.toLowerCase()) ||
+      s.department.toLowerCase().includes(query.toLowerCase());
     const matchF = filter === 'all' || s.status === filter;
     return matchQ && matchF;
   });
@@ -26,9 +28,14 @@ export default function Students() {
             <h1 className="page-title">Students</h1>
             <p className="page-subtitle">Manage and view all registered students</p>
           </div>
-          <button className="btn btn-primary btn-sm">
-            <MdPerson /> Add Student
-          </button>
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <Link to="/admin/settings" className="btn btn-secondary btn-sm">
+              <MdFileUpload /> Import CSV / PDF
+            </Link>
+            <button className="btn btn-primary btn-sm">
+              <MdPerson /> Add Student
+            </button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -39,11 +46,11 @@ export default function Students() {
               className={styles.searchInput}
               placeholder="Search by name, roll no, department..."
               value={query}
-              onChange={e => setQuery(e.target.value)}
+              onChange={(e) => setQuery(e.target.value)}
             />
           </div>
           <div className={styles.filterGroup}>
-            {['all', 'active', 'inactive'].map(f => (
+            {['all', 'active', 'inactive'].map((f) => (
               <button
                 key={f}
                 className={`${styles.filterBtn} ${filter === f ? styles.active : ''}`}
@@ -63,13 +70,13 @@ export default function Students() {
           </div>
           <div className={styles.stat}>
             <span className={styles.statVal} style={{ color: 'var(--accent)' }}>
-              {students.filter(s => s.status === 'active').length}
+              {students.filter((s) => s.status === 'active').length}
             </span>
             <span className={styles.statKey}>Active</span>
           </div>
           <div className={styles.stat}>
             <span className={styles.statVal} style={{ color: 'var(--danger)' }}>
-              {students.filter(s => s.status === 'inactive').length}
+              {students.filter((s) => s.status === 'inactive').length}
             </span>
             <span className={styles.statKey}>Inactive</span>
           </div>
@@ -90,24 +97,34 @@ export default function Students() {
               </tr>
             </thead>
             <tbody>
-              {filtered.map(s => (
+              {filtered.map((s) => (
                 <tr key={s.id}>
                   <td>
                     <div className={styles.studentCell}>
-                      <div className={styles.avatar}>
-                        {getInitials(s.name)}
-                      </div>
+                      <div className={styles.avatar}>{getInitials(s.name)}</div>
                       <div>
                         <div className={styles.studentName}>{s.name}</div>
                         <div className={styles.studentEmail}>{s.email}</div>
                       </div>
                     </div>
                   </td>
-                  <td><code className={styles.code}>{s.rollNumber}</code></td>
+                  <td>
+                    <code className={styles.code}>{s.rollNumber}</code>
+                  </td>
                   <td>{s.department}</td>
                   <td>Sem {s.semester}</td>
                   <td>
-                    <span style={{ color: s.gpa >= 8.5 ? 'var(--accent)' : s.gpa >= 7 ? 'var(--info)' : 'var(--warning)', fontWeight: 600 }}>
+                    <span
+                      style={{
+                        color:
+                          s.gpa >= 8.5
+                            ? 'var(--accent)'
+                            : s.gpa >= 7
+                            ? 'var(--info)'
+                            : 'var(--warning)',
+                        fontWeight: 600,
+                      }}
+                    >
                       {s.gpa}
                     </span>
                   </td>
@@ -130,9 +147,7 @@ export default function Students() {
               ))}
             </tbody>
           </table>
-          {filtered.length === 0 && (
-            <div className={styles.empty}>No students match your search.</div>
-          )}
+          {filtered.length === 0 && <div className={styles.empty}>No students match your search.</div>}
         </div>
       </main>
     </>
