@@ -35,11 +35,11 @@ const alertsData = [
 ];
 
 const rawScoreDistData = [
-  { name: '90-100', value: 8,  lightColor: '#2A6B49', darkColor: '#4ADE80' },
-  { name: '80-89',  value: 15, lightColor: '#1E2B37', darkColor: '#38BDF8' },
-  { name: '70-79',  value: 12, lightColor: '#2D3E4F', darkColor: '#818CF8' },
-  { name: '60-69',  value: 7,  lightColor: '#C88A2D', darkColor: '#FBBF24' },
-  { name: 'Below',  value: 3,  lightColor: '#A62B2B', darkColor: '#F87171' },
+  { name: '90-100', value: 8,  lightColor: '#2A6B49', darkColor: '#58A67B' },
+  { name: '80-89',  value: 15, lightColor: '#1E2B37', darkColor: '#708A9E' },
+  { name: '70-79',  value: 12, lightColor: '#2D3E4F', darkColor: '#556E82' },
+  { name: '60-69',  value: 7,  lightColor: '#C88A2D', darkColor: '#DDA555' },
+  { name: 'Below',  value: 3,  lightColor: '#A62B2B', darkColor: '#D96B6B' },
 ];
 
 export default function FeaturedDashboardCharts() {
@@ -48,26 +48,26 @@ export default function FeaturedDashboardCharts() {
   const isDark = theme === 'dark';
 
   const customTooltipStyle = {
-    backgroundColor: isDark ? '#132032' : '#FFFFFF',
-    border: `1px solid ${isDark ? '#2D425C' : '#D9D7CE'}`,
+    backgroundColor: isDark ? '#171E28' : '#FFFFFF',
+    border: `1px solid ${isDark ? '#283142' : '#D9D7CE'}`,
     borderRadius: '6px',
-    color: isDark ? '#F8FAFC' : '#0F2042',
+    color: isDark ? '#F0F3F7' : '#0F2042',
     fontSize: '0.8rem',
     fontFamily: 'IBM Plex Mono, monospace',
     boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.08)'
   };
 
-  const gridStroke = isDark ? 'rgba(255, 255, 255, 0.08)' : '#EAE8E1';
-  const axisTickColor = isDark ? '#94A3B8' : '#5C6A79';
-  const legendTextColor = isDark ? '#CBD5E1' : '#5C6A79';
+  const gridStroke = isDark ? 'rgba(255, 255, 255, 0.06)' : '#EAE8E1';
+  const axisTickColor = isDark ? '#8896A6' : '#5C6A79';
+  const legendTextColor = isDark ? '#C2CBD6' : '#5C6A79';
 
   const colors = {
-    present: isDark ? '#3B82F6' : '#1E2B37',
-    absent: isDark ? '#F87171' : '#A62B2B',
-    anomalyStroke: isDark ? '#F87171' : '#A62B2B',
-    avgScore: isDark ? '#60A5FA' : '#1E2B37',
-    highestMark: isDark ? '#4ADE80' : '#2A6B49',
-    lowestMark: isDark ? '#F87171' : '#A62B2B',
+    present: isDark ? '#708A9E' : '#1E2B37',
+    absent: isDark ? '#D96B6B' : '#A62B2B',
+    anomalyStroke: isDark ? '#D96B6B' : '#A62B2B',
+    avgScore: isDark ? '#708A9E' : '#1E2B37',
+    highestMark: isDark ? '#58A67B' : '#2A6B49',
+    lowestMark: isDark ? '#D96B6B' : '#A62B2B',
   };
 
   const scoreDistData = rawScoreDistData.map(d => ({
@@ -235,7 +235,7 @@ export default function FeaturedDashboardCharts() {
                 <div className={styles.subtitle}>{heroChart.subtitle}</div>
               </div>
               <span className={styles.badgeFeatured}>
-                <MdStar size={13} color={isDark ? '#60A5FA' : '#1e2b37'} /> ACTIVE FEATURED
+                <MdStar size={13} color={isDark ? '#708A9E' : '#1e2b37'} /> ACTIVE FEATURED
               </span>
             </div>
             <div className={`${styles.cardBody} ${styles.heroBody}`}>

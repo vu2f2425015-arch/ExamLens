@@ -30,7 +30,7 @@
 }
 
 .time {
-  background: #F0EFEA;
+  background: var(--surface-subtle);
   padding: 0.15rem 0.45rem;
   border-radius: var(--radius-sm);
   font-family: var(--font-mono);

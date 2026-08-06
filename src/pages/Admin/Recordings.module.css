@@ -32,7 +32,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #1E2B37;
+  background: var(--surface-subtle);
 }
 
 .initials {

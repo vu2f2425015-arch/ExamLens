@@ -154,3 +154,21 @@
   font-size: 0.78rem;
   color: var(--primary-slate);
 }
+
+@media (max-width: 600px) {
+  .welcome {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .statsGrid {
+    grid-template-columns: 1fr;
+  }
+  .activeAlert {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  .examGrid {
+    grid-template-columns: 1fr;
+  }
+}

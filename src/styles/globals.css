@@ -103,64 +103,65 @@
 }
 
 /* ── Dark Theme Token Overrides ── */
+/* ── Dark Theme Token Overrides ── */
 [data-theme="dark"] {
-  /* Unified Dark Background Family (Rich dark slate/navy surface system) */
-  --bg-paper: #0B1320;
-  --surface-card: #132032;
-  --surface-hover: #1C2D44;
-  --surface-subtle: #17263A;
-  --surface-2: #17263A;
+  /* Institutional Low-Light Surface System (3 distinct near-black surface levels) */
+  --bg-paper: #0F141C;         /* Level 0: Deep canvas background */
+  --surface-card: #171E28;     /* Level 1: Elevated card surface */
+  --surface-hover: #212936;    /* Level 2: Interactive / hover surface */
+  --surface-subtle: #1C2431;   /* Section headers & subtle containers */
+  --surface-2: #19212D;
 
-  /* Brand / Action slate accent in dark mode */
-  --primary-slate: #3B82F6;
-  --primary-slate-light: #60A5FA;
-  --primary-slate-dark: #2563EB;
+  /* Brand / Action Slate Ink in Dark Mode (institutional authority, desaturated low-light ink) */
+  --primary-slate: #708A9E;
+  --primary-slate-light: #8EA5B8;
+  --primary-slate-dark: #556E82;
 
-  /* Text & Labels with strict WCAG AA contrast (4.5:1+ for body/labels, 7.0:1+ for titles) */
-  --text-ink: #F8FAFC;
-  --text-body: #CBD5E1;
-  --text-muted: #94A3B8;
-  --text-disabled: #64748B;
+  /* Text & Labels with clear contrast (WCAG AA compliant, soft warm tones) */
+  --text-ink: #F0F3F7;
+  --text-body: #C2CBD6;
+  --text-muted: #8896A6;
+  --text-disabled: #5A6878;
 
-  /* Dark-mode specific borders & dividers */
-  --border-rule: #1E2E42;
-  --border-strong: #2D425C;
-  --border-focus: #60A5FA;
+  /* Institutional Dark Ruled Borders */
+  --border-rule: #283142;
+  --border-strong: #3D475C;
+  --border-focus: #708A9E;
 
-  /* Dedicated Sidebar Tokens (Dark Navy family matching content background) */
-  --sidebar-bg: #0F1A2A;
-  --sidebar-border: #1E2E42;
-  --sidebar-text: #F8FAFC;
-  --sidebar-text-muted: #94A3B8;
-  --sidebar-hover-bg: #1C2D44;
-  --sidebar-active-bg: #1B324B;
-  --sidebar-active-border: #4ADE80;
+  /* Dedicated Sidebar Tokens (Dark Slate Navy hierarchy) */
+  --sidebar-bg: #121824;
+  --sidebar-border: #283142;
+  --sidebar-text: #F0F0F0;
+  --sidebar-text-muted: #8896A6;
+  --sidebar-hover-bg: #1C2431;
+  --sidebar-active-bg: #212936;
+  --sidebar-active-border: #58A67B;
 
-  /* Official Status Stamp Colors (Vibrant, high-contrast on dark surfaces) */
-  --stamp-green: #4ADE80;
-  --stamp-green-bg: #0B291B;
-  --stamp-green-border: #165636;
+  /* Official Status Stamp Colors (Desaturated, raised luminance, low-opacity tonal backgrounds) */
+  --stamp-green: #58A67B;
+  --stamp-green-bg: rgba(88, 166, 123, 0.12);
+  --stamp-green-border: rgba(88, 166, 123, 0.30);
 
-  --stamp-red: #F87171;
-  --stamp-red-bg: #2D1214;
-  --stamp-red-border: #632025;
+  --stamp-red: #D96B6B;
+  --stamp-red-bg: rgba(217, 107, 107, 0.12);
+  --stamp-red-border: rgba(217, 107, 107, 0.30);
 
-  --stamp-ochre: #FBBF24;
-  --stamp-ochre-bg: #2B1F07;
-  --stamp-ochre-border: #5E430D;
+  --stamp-ochre: #DDA555;
+  --stamp-ochre-bg: rgba(221, 165, 85, 0.12);
+  --stamp-ochre-border: rgba(221, 165, 85, 0.30);
 
-  --stamp-slate: #94A3B8;
-  --stamp-slate-bg: #172436;
-  --stamp-slate-border: #2D425C;
+  --stamp-slate: #8896A6;
+  --stamp-slate-bg: rgba(136, 150, 166, 0.12);
+  --stamp-slate-border: rgba(136, 150, 166, 0.28);
 
   /* Aliases re-mapped */
   --primary: var(--primary-slate);
   --primary-light: var(--primary-slate-light);
   --primary-dark: var(--primary-slate-dark);
-  --primary-glow: rgba(59, 130, 246, 0.15);
+  --primary-glow: rgba(112, 138, 158, 0.15);
 
   --secondary: var(--text-ink);
-  --secondary-light: #93C5FD;
+  --secondary-light: #A0B2C6;
 
   --accent: var(--stamp-green);
   --danger: var(--stamp-red);
@@ -168,20 +169,20 @@
   --info: var(--primary-slate);
 
   --bg: var(--bg-paper);
-  --bg-secondary: #132032;
+  --bg-secondary: #131A24;
   --surface: var(--surface-card);
   --card: var(--surface-card);
-  --card-hover: #1C2D44;
+  --card-hover: var(--surface-hover);
 
   --border: var(--border-rule);
 
   --text-primary: var(--text-ink);
   --text-secondary: var(--text-body);
 
-  /* Shadows */
-  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.40);
-  --shadow-md: 0 3px 10px rgba(0, 0, 0, 0.50);
-  --shadow-lg: 0 6px 20px rgba(0, 0, 0, 0.60);
+  /* Elevation Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.35);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.55);
 }
 
 /* Smooth colour-scheme transitions */
@@ -622,8 +623,39 @@ a:hover {
 /* ── Responsive ── */
 @media (max-width: 768px) {
   .main-content { margin-left: 0; }
+  .page-body {
+    padding: calc(var(--navbar-height) + 1rem) 1rem 1.5rem;
+  }
+  .page-header {
+    margin-bottom: 1rem;
+  }
+  .page-header.flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+  }
+  .page-title {
+    font-size: 1.4rem;
+  }
+  .page-subtitle {
+    font-size: 0.8rem;
+  }
   .hide-mobile { display: none !important; }
 }
+
+@media (max-width: 480px) {
+  .page-body {
+    padding: calc(var(--navbar-height) + 0.75rem) 0.75rem 1.25rem;
+  }
+  .page-title {
+    font-size: 1.25rem;
+  }
+  .btn {
+    padding: 0.5rem 0.85rem;
+    font-size: 0.825rem;
+  }
+}
+
 @media (min-width: 769px) {
   .hide-desktop { display: none !important; }
 }

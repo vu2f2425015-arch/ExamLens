@@ -17,11 +17,11 @@ const attendanceData = [
 ];
 
 const rawViolationData = [
-  { name: 'Face Lost',    value: 45, lightColor: '#F59E0B', darkColor: '#F59E0B' },
-  { name: 'Tab Switch',   value: 23, lightColor: '#F97316', darkColor: '#FB923C' },
-  { name: 'Multi Faces',  value: 12, lightColor: '#EF4444', darkColor: '#F87171' },
-  { name: 'Phone Detect', value: 8,  lightColor: '#DC2626', darkColor: '#F43F5E' },
-  { name: 'Noise',        value: 30, lightColor: '#6C63FF', darkColor: '#818CF8' },
+  { name: 'Face Lost',    value: 45, lightColor: '#F59E0B', darkColor: '#DDA555' },
+  { name: 'Tab Switch',   value: 23, lightColor: '#F97316', darkColor: '#E07A5F' },
+  { name: 'Multi Faces',  value: 12, lightColor: '#EF4444', darkColor: '#D96B6B' },
+  { name: 'Phone Detect', value: 8,  lightColor: '#DC2626', darkColor: '#C85555' },
+  { name: 'Noise',        value: 30, lightColor: '#6C63FF', darkColor: '#708A9E' },
 ];
 
 const scoreData = [
@@ -48,25 +48,25 @@ export default function FeaturedReportCharts() {
   const isDark = theme === 'dark';
 
   const customTooltipStyle = {
-    backgroundColor: isDark ? '#132032' : '#FFFFFF',
-    border: `1px solid ${isDark ? '#2D425C' : '#D9D7CE'}`,
+    backgroundColor: isDark ? '#171E28' : '#FFFFFF',
+    border: `1px solid ${isDark ? '#283142' : '#D9D7CE'}`,
     borderRadius: '6px',
-    color: isDark ? '#F8FAFC' : '#0F2042',
+    color: isDark ? '#F0F3F7' : '#0F2042',
     fontSize: '0.8rem',
     fontFamily: 'IBM Plex Mono, monospace',
     boxShadow: isDark ? '0 4px 20px rgba(0,0,0,0.5)' : '0 2px 8px rgba(0,0,0,0.08)'
   };
 
-  const gridStroke = isDark ? 'rgba(255, 255, 255, 0.08)' : '#EAE8E1';
-  const axisTickColor = isDark ? '#94A3B8' : '#5C6A79';
-  const legendTextColor = isDark ? '#CBD5E1' : '#5C6A79';
+  const gridStroke = isDark ? 'rgba(255, 255, 255, 0.06)' : '#EAE8E1';
+  const axisTickColor = isDark ? '#8896A6' : '#5C6A79';
+  const legendTextColor = isDark ? '#C2CBD6' : '#5C6A79';
 
   const colors = {
-    appeared: isDark ? '#3B82F6' : '#1E2B37',
-    absent: isDark ? '#F87171' : '#A62B2B',
-    scoreBar: isDark ? '#4ADE80' : '#2A6B49',
-    avgScoreLine: isDark ? '#38BDF8' : '#1E2B37',
-    passRateLine: isDark ? '#4ADE80' : '#2A6B49',
+    appeared: isDark ? '#708A9E' : '#1E2B37',
+    absent: isDark ? '#D96B6B' : '#A62B2B',
+    scoreBar: isDark ? '#58A67B' : '#2A6B49',
+    avgScoreLine: isDark ? '#708A9E' : '#1E2B37',
+    passRateLine: isDark ? '#58A67B' : '#2A6B49',
   };
 
   const violationData = rawViolationData.map(d => ({
@@ -227,7 +227,7 @@ export default function FeaturedReportCharts() {
                 <div className={styles.subtitle}>{heroChart.subtitle}</div>
               </div>
               <span className={styles.badgeFeatured}>
-                <MdStar size={13} color={isDark ? '#60A5FA' : '#1e2b37'} /> ACTIVE FEATURED
+                <MdStar size={13} color={isDark ? '#708A9E' : '#1e2b37'} /> ACTIVE FEATURED
               </span>
             </div>
             <div className={`${styles.cardBody} ${styles.heroBody}`}>

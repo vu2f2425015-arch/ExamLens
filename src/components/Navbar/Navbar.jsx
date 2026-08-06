@@ -1,28 +1,59 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { getCurrentDateTime, getInitials } from '../../utils/formatters';
 import styles from './Navbar.module.css';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import {
-  MdNotifications, MdSearch, MdCircle, MdKeyboardArrowDown,
-  MdDashboard
+  MdNotifications, MdSearch, MdKeyboardArrowDown,
+  MdDashboard, MdLogout, MdSettings, MdPerson, MdMenu
 } from 'react-icons/md';
 
 export default function Navbar({ title }) {
-  const { user, role } = useAuth();
+  const { user, role, logout } = useAuth();
+  const navigate = useNavigate();
   const [dateTime, setDateTime] = useState(getCurrentDateTime());
   const [notifications] = useState(3);
   const [showNotif, setShowNotif] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const profileRef = useRef(null);
 
   useEffect(() => {
     const id = setInterval(() => setDateTime(getCurrentDateTime()), 60000);
     return () => clearInterval(id);
   }, []);
 
+  // Close profile dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setShowProfile(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    navigate('/login');
+  };
+
+  const toggleMobileSidebar = () => {
+    window.dispatchEvent(new Event('toggle-mobile-sidebar'));
+  };
+
   return (
     <header className={styles.navbar}>
-      {/* Page Title */}
+      {/* Page Title & Mobile Menu Toggle */}
       <div className={styles.left}>
+        <button
+          className={styles.mobileMenuBtn}
+          onClick={toggleMobileSidebar}
+          aria-label="Open Mobile Menu"
+        >
+          <MdMenu />
+        </button>
         <div className={styles.breadcrumb}>
           <MdDashboard className={styles.breadcrumbIcon} />
           <span className={styles.pageTitle}>{title || 'Dashboard'}</span>
@@ -82,17 +113,78 @@ export default function Navbar({ title }) {
         </div>
 
         {/* Profile */}
-        <div className={styles.profile}>
-          <div className={styles.profileAvatar}>
-            {getInitials(user?.name || 'U')}
-          </div>
-          <div className={styles.profileInfo}>
-            <div className={styles.profileName}>{user?.name?.split(' ')[0]}</div>
-            <div className={styles.profileRole}>
-              {role === 'admin' ? 'Administrator' : 'Student'}
+        <div className={styles.profileWrapper} ref={profileRef}>
+          <button
+            className={styles.profile}
+            onClick={() => setShowProfile(v => !v)}
+            aria-expanded={showProfile}
+          >
+            <div className={styles.profileAvatar}>
+              {getInitials(user?.name || 'Admin')}
             </div>
-          </div>
-          <MdKeyboardArrowDown className={styles.chevron} />
+            <div className={styles.profileInfo}>
+              <div className={styles.profileName}>{user?.name || 'Dr. Administrator'}</div>
+              <div className={styles.profileRole}>
+                {role === 'admin' ? 'Administrator' : 'Student'}
+              </div>
+            </div>
+            <MdKeyboardArrowDown
+              className={styles.chevron}
+              style={{ transform: showProfile ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}
+            />
+          </button>
+
+          {showProfile && (
+            <div className={styles.profileDropdown}>
+              <div className={styles.profileHeader}>
+                <div className={styles.dropdownAvatar}>{getInitials(user?.name || 'Admin')}</div>
+                <div>
+                  <div className={styles.dropdownName}>{user?.name || 'Dr. Administrator'}</div>
+                  <div className={styles.dropdownEmail}>{user?.email || (role === 'admin' ? 'admin@examlens.edu' : 'student@examlens.edu')}</div>
+                </div>
+              </div>
+              <div className={styles.dropdownMenu}>
+                {role === 'admin' ? (
+                  <>
+                    <button
+                      className={styles.dropdownItem}
+                      onClick={() => { navigate('/admin/settings'); setShowProfile(false); }}
+                    >
+                      <MdSettings /> System Settings
+                    </button>
+                    <button
+                      className={styles.dropdownItem}
+                      onClick={() => { navigate('/admin/dashboard'); setShowProfile(false); }}
+                    >
+                      <MdPerson /> Proctor Desk
+                    </button>
+                  </>
+                ) : (
+                  <>
+                    <button
+                      className={styles.dropdownItem}
+                      onClick={() => { navigate('/student/profile'); setShowProfile(false); }}
+                    >
+                      <MdPerson /> My Profile
+                    </button>
+                    <button
+                      className={styles.dropdownItem}
+                      onClick={() => { navigate('/student/dashboard'); setShowProfile(false); }}
+                    >
+                      <MdPerson /> Student Dashboard
+                    </button>
+                  </>
+                )}
+                <div className={styles.dropdownDivider} />
+                <button
+                  className={`${styles.dropdownItem} ${styles.danger}`}
+                  onClick={handleLogout}
+                >
+                  <MdLogout /> Sign Out
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </header>

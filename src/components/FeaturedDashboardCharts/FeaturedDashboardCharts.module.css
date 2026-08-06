@@ -48,8 +48,9 @@
 }
 
 .thumbnailCard:hover {
-  border-color: var(--color-primary, #1e2b37);
-  box-shadow: 0 4px 12px rgba(15, 32, 66, 0.12);
+  background: var(--surface-hover);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
 }
 
 .cardHeader {
@@ -57,8 +58,8 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  border-bottom: 1px solid var(--border-rule, #d9d7ce);
-  background: var(--surface-subtle, #f7f6f2);
+  border-bottom: 1px solid var(--border-rule);
+  background: var(--surface-subtle);
 }
 
 .heroHeader {
@@ -74,7 +75,7 @@
   font-family: var(--font-display, 'IBM Plex Sans', sans-serif);
   font-size: 0.95rem;
   font-weight: 700;
-  color: var(--text-ink, #0f2042);
+  color: var(--text-ink);
   line-height: 1.2;
 }
 
@@ -85,7 +86,7 @@
 .subtitle {
   font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
   font-size: 0.75rem;
-  color: var(--text-muted, #5c6a79);
+  color: var(--text-muted);
   margin-top: 0.15rem;
 }
 
@@ -98,11 +99,11 @@
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  background: rgba(30, 43, 55, 0.08);
-  color: #1e2b37;
+  background: var(--stamp-slate-bg);
+  color: var(--text-ink);
   padding: 0.25rem 0.55rem;
   border-radius: 4px;
-  border: 1px solid rgba(30, 43, 55, 0.2);
+  border: 1px solid var(--stamp-slate-border);
 }
 
 .statBadge {

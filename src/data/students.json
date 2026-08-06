@@ -102,5 +102,57 @@
     "status": "active",
     "joinDate": "2021-08-01",
     "gpa": 8.9
+  },
+  {
+    "id": "STU009",
+    "name": "Rohan Das",
+    "email": "rohan.das@examlens.edu",
+    "department": "Computer Science",
+    "semester": 5,
+    "rollNumber": "CS2021009",
+    "photo": null,
+    "phone": "+91 91234 56789",
+    "status": "active",
+    "joinDate": "2021-08-01",
+    "gpa": 8.6
+  },
+  {
+    "id": "STU010",
+    "name": "Meera Reddy",
+    "email": "meera.reddy@examlens.edu",
+    "department": "Information Technology",
+    "semester": 5,
+    "rollNumber": "IT2021010",
+    "photo": null,
+    "phone": "+91 81234 56789",
+    "status": "active",
+    "joinDate": "2021-08-01",
+    "gpa": 9.2
+  },
+  {
+    "id": "STU011",
+    "name": "Amit Shah",
+    "email": "amit.shah@examlens.edu",
+    "department": "Electronics",
+    "semester": 5,
+    "rollNumber": "EC2021011",
+    "photo": null,
+    "phone": "+91 71234 56789",
+    "status": "active",
+    "joinDate": "2021-08-01",
+    "gpa": 8.1
+  },
+  {
+    "id": "STU012",
+    "name": "Kavya Iyer",
+    "email": "kavya.iyer@examlens.edu",
+    "department": "Computer Science",
+    "semester": 7,
+    "rollNumber": "CS2020012",
+    "photo": null,
+    "phone": "+91 61234 56789",
+    "status": "active",
+    "joinDate": "2020-08-01",
+    "gpa": 9.5
   }
 ]

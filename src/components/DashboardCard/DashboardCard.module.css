@@ -1,7 +1,6 @@
 .card {
   background: var(--surface-card);
   border: 1px solid var(--border-rule);
-  border-left: 4px solid var(--primary-slate);
   border-radius: var(--radius-sm);
   padding: 1.15rem 1.25rem;
   display: flex;
@@ -9,10 +8,11 @@
   gap: 1rem;
   position: relative;
   box-shadow: var(--shadow-sm);
-  transition: border-color var(--transition-fast);
+  transition: border-color var(--transition-fast), background-color var(--transition-fast);
 }
 
 .card:hover {
+  background: var(--surface-hover);
   border-color: var(--border-strong);
 }
 
