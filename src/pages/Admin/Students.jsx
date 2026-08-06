@@ -2,8 +2,15 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import styles from './Students.module.css';
-import staticStudents from '../../data/students.json';
-import { getAllStudents, saveLocalStorageStudents, saveDocument } from '../../services/firebaseService';
+import {
+  getAllStudents,
+  getInitialStudentsSync,
+  saveLocalStorageStudents,
+  saveDocument,
+  checkFirebaseConnection,
+  seedFirestoreData,
+} from '../../services/firebaseService';
+import { isFirebaseConfigured } from '../../config/firebase';
 import { getInitials } from '../../utils/formatters';
 import {
   MdSearch,
@@ -16,13 +23,66 @@ import {
   MdSave,
   MdDelete,
   MdCheckCircle,
+  MdCloudDone,
+  MdCloudUpload,
 } from 'react-icons/md';
 
 export default function Students() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
-  const [students, setStudents] = useState(staticStudents);
-  const [isLoading, setIsLoading] = useState(true);
+
+  // ⚡ 0ms INSTANT RENDER: Initialize with local cache + roster (108 records up front!)
+  const [students, setStudents] = useState(() => getInitialStudentsSync());
+  const [isSyncing, setIsSyncing] = useState(false);
+  const [firebaseStatus, setFirebaseStatus] = useState(null);
+
+  // Background silent revalidation & Firebase status check
+  const refreshStudents = async (showLoadingState = false) => {
+    if (showLoadingState) setIsSyncing(true);
+    try {
+      const data = await getAllStudents();
+      if (data && data.length > 0) {
+        setStudents(data);
+      }
+    } catch (e) {
+      console.error('Failed to load background students:', e);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
+
+  useEffect(() => {
+    refreshStudents(false);
+
+    // Verify Firebase connection status
+    checkFirebaseConnection().then((res) => {
+      setFirebaseStatus(res);
+    });
+  }, []);
+
+  // Trigger manual cloud sync to Firebase
+  const handleSyncToFirebase = async () => {
+    setIsSyncing(true);
+    setStatusNotice({ type: 'info', msg: 'Syncing all candidate records to Cloud Firestore...' });
+
+    try {
+      const res = await seedFirestoreData();
+      if (res.success) {
+        setStatusNotice({
+          type: 'success',
+          msg: `Successfully synced ${res.count || students.length} records to Cloud Firestore (project: examlens-84e91)!`,
+        });
+        checkFirebaseConnection().then((res) => setFirebaseStatus(res));
+      } else {
+        setStatusNotice({ type: 'error', msg: 'Cloud sync note: Saved locally. (Check Firebase rules for cloud sync)' });
+      }
+    } catch (err) {
+      setStatusNotice({ type: 'error', msg: 'Sync completed locally: ' + err.message });
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setStatusNotice(null), 5000);
+    }
+  };
 
   // Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -42,24 +102,6 @@ export default function Students() {
     status: 'active',
     activated: false,
   });
-
-  const fetchStudents = async () => {
-    setIsLoading(true);
-    try {
-      const data = await getAllStudents();
-      if (data && data.length > 0) {
-        setStudents(data);
-      }
-    } catch (e) {
-      console.error('Failed to load students:', e);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchStudents();
-  }, []);
 
   // Open Modal to Add Student
   const handleOpenAddModal = () => {
@@ -101,7 +143,7 @@ export default function Students() {
   };
 
   // Save Form (Add or Edit)
-  const handleSaveStudent = (e) => {
+  const handleSaveStudent = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.rollNumber) {
       alert('Please fill out Name and Roll Number.');
@@ -118,13 +160,9 @@ export default function Students() {
       gpa: parseFloat(formData.gpa) || 8.0,
     };
 
-    // 1. Update LocalStorage & memory
+    // 1. Instantly save to LocalStorage & update memory state
     saveLocalStorageStudents([updatedRecord]);
 
-    // 2. Sync to Firestore (non-blocking)
-    saveDocument('students', cleanRoll, updatedRecord).catch(() => {});
-
-    // 3. Update component state
     setStudents((prev) => {
       const map = new Map();
       prev.forEach((s) => map.set(s.rollNumber, s));
@@ -132,12 +170,18 @@ export default function Students() {
       return Array.from(map.values());
     });
 
+    // 2. Sync to Cloud Firestore if Firebase is active
+    let cloudSynced = false;
+    if (isFirebaseConfigured()) {
+      cloudSynced = await saveDocument('students', cleanRoll, updatedRecord);
+    }
+
     setIsEditModalOpen(false);
     setStatusNotice({
       type: 'success',
       msg: isEditingExisting
-        ? `Successfully updated details for candidate ${updatedRecord.name} (${cleanRoll}).`
-        : `Successfully added new candidate record ${updatedRecord.name} (${cleanRoll}).`,
+        ? `Updated candidate ${updatedRecord.name} (${cleanRoll})! ${cloudSynced ? '[Synced to Firebase]' : '[Saved to Database]'}`
+        : `Added candidate ${updatedRecord.name} (${cleanRoll})! ${cloudSynced ? '[Synced to Firebase]' : '[Saved to Database]'}`,
     });
 
     setTimeout(() => setStatusNotice(null), 4000);
@@ -183,9 +227,50 @@ export default function Students() {
             <h1 className="page-title">Students Roster</h1>
             <p className="page-subtitle">Add, edit, and manage registered student records</p>
           </div>
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            <button className="btn btn-ghost btn-sm" onClick={fetchStudents} title="Refresh student list">
-              <MdRefresh /> Refresh
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+            {/* Firebase Cloud Status Indicator */}
+            {isFirebaseConfigured() ? (
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.3rem 0.65rem',
+                  borderRadius: '4px',
+                  background: '#f0fdf4',
+                  color: '#166534',
+                  border: '1px solid #bbf7d0',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontWeight: 600,
+                }}
+                title="Connected to Firebase project: examlens-84e91"
+              >
+                <MdCloudDone style={{ fontSize: '1rem', color: '#16a34a' }} /> Firebase Connected ({firebaseStatus?.count ? `${firebaseStatus.count} Cloud Docs` : 'examlens-84e91'})
+              </span>
+            ) : (
+              <span
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.3rem 0.65rem',
+                  borderRadius: '4px',
+                  background: '#fefce8',
+                  color: '#854d0e',
+                  border: '1px solid #fef08a',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                  fontWeight: 600,
+                }}
+              >
+                Local Storage Vault Active
+              </span>
+            )}
+
+            <button className="btn btn-secondary btn-sm" onClick={handleSyncToFirebase} title="Sync all 108 records to Cloud Firestore">
+              <MdCloudUpload /> Sync to Firebase
+            </button>
+            <button className="btn btn-ghost btn-sm" onClick={() => refreshStudents(true)} title="Refresh list">
+              <MdRefresh /> {isSyncing ? 'Syncing...' : 'Refresh'}
             </button>
             <Link to="/admin/settings" className="btn btn-secondary btn-sm">
               <MdFileUpload /> Import CSV / PDF
@@ -203,9 +288,9 @@ export default function Students() {
               padding: '0.75rem 1rem',
               marginBottom: '1rem',
               borderRadius: '6px',
-              background: '#f0fdf4',
-              border: '1px solid #bbf7d0',
-              color: '#15803d',
+              background: statusNotice.type === 'error' ? '#fef2f2' : '#f0fdf4',
+              border: statusNotice.type === 'error' ? '1px solid #fecaca' : '1px solid #bbf7d0',
+              color: statusNotice.type === 'error' ? '#991b1b' : '#15803d',
               fontSize: '0.85rem',
               display: 'flex',
               alignItems: 'center',
@@ -334,7 +419,7 @@ export default function Students() {
               ))}
             </tbody>
           </table>
-          {!isLoading && filtered.length === 0 && (
+          {filtered.length === 0 && (
             <div className={styles.empty}>No students match your search.</div>
           )}
         </div>

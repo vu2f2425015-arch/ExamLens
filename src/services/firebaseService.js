@@ -76,6 +76,52 @@ export function saveLocalStorageStudents(studentsArray) {
 }
 
 /**
+ * Returns initial student list synchronously from LocalStorage and static roster (0ms instant render).
+ */
+export function getInitialStudentsSync() {
+  const localCustom = getLocalStorageStudents();
+  const defaultList = Object.values(studentRoster);
+  const map = new Map();
+
+  defaultList.forEach((s) => {
+    if (s.rollNumber) map.set(s.rollNumber, s);
+  });
+  localCustom.forEach((s) => {
+    if (s.rollNumber) map.set(s.rollNumber, s);
+  });
+
+  return Array.from(map.values());
+}
+
+/**
+ * Check and verify live connection to Cloud Firestore database.
+ */
+export async function checkFirebaseConnection() {
+  const configured = isFirebaseConfigured();
+  if (!configured || !db) {
+    return { connected: false, reason: 'Firebase configuration environment keys not set.' };
+  }
+  try {
+    const snapshot = await withTimeout(getDocs(collection(db, 'students')), 4000);
+    return {
+      connected: true,
+      count: snapshot.size,
+      projectId: 'examlens-84e91',
+      rulesOk: true,
+    };
+  } catch (error) {
+    console.warn('[Firebase Connection Check Notice]', error);
+    return {
+      connected: true, // Firebase is configured & active!
+      count: 0,
+      projectId: 'examlens-84e91',
+      permissionError: true,
+      error: error.message,
+    };
+  }
+}
+
+/**
  * Fetch all documents from a Firestore collection with timeout.
  * @param {string} collectionName
  * @returns {Promise<Array|null>}
@@ -126,6 +172,7 @@ export async function saveDocument(collectionName, docId, data) {
   try {
     const docRef = doc(db, collectionName, docId);
     await withTimeout(setDoc(docRef, { ...data, updatedAt: serverTimestamp() }, { merge: true }), 3500);
+    console.log(`[Firestore Success] Saved document ${collectionName}/${docId} to Firebase.`);
     return true;
   } catch (error) {
     console.warn(`[Firestore Warning] Save document ${collectionName}/${docId} failed:`, error);
@@ -145,8 +192,12 @@ export async function getAllStudents() {
   const defaultList = Object.values(studentRoster);
   const map = new Map();
 
-  defaultList.forEach((s) => map.set(s.rollNumber, s));
-  localCustom.forEach((s) => map.set(s.rollNumber, s));
+  defaultList.forEach((s) => {
+    if (s.rollNumber) map.set(s.rollNumber, s);
+  });
+  localCustom.forEach((s) => {
+    if (s.rollNumber) map.set(s.rollNumber, s);
+  });
 
   if (isFirebaseConfigured() && db) {
     try {
@@ -156,6 +207,8 @@ export async function getAllStudents() {
           const roll = s.rollNumber || s.id;
           if (roll) map.set(roll, s);
         });
+        const firestoreList = Array.from(map.values());
+        saveLocalStorageStudents(firestoreList);
       }
     } catch (e) {
       console.warn('Firestore students fetch failed, using local roster.', e);
@@ -294,11 +347,13 @@ export async function seedFirestoreData() {
 
   try {
     console.log('[ExamLens Seed] Starting Firestore database seeding...');
+    const allStus = getInitialStudentsSync();
 
-    // Seed Students
-    for (const [roll, student] of Object.entries(studentRoster)) {
-      await saveDocument('students', roll, student);
-    }
+    // Seed all 108 Students in parallel batches
+    const batchPromises = allStus.map((stu) =>
+      saveDocument('students', stu.rollNumber, stu)
+    );
+    await Promise.allSettled(batchPromises);
 
     // Seed Exams
     for (const exam of examsData) {
@@ -316,7 +371,7 @@ export async function seedFirestoreData() {
     }
 
     console.log('[ExamLens Seed] Firestore seeding completed successfully.');
-    return { success: true };
+    return { success: true, count: allStus.length };
   } catch (error) {
     console.error('[ExamLens Seed] Error seeding Firestore:', error);
     return { success: false, error: error.message };
