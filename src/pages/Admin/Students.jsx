@@ -9,6 +9,7 @@ import {
   saveDocument,
   checkFirebaseConnection,
   seedFirestoreData,
+  clearAllStudents,
 } from '../../services/firebaseService';
 import { isFirebaseConfigured } from '../../config/firebase';
 import { getInitials } from '../../utils/formatters';
@@ -31,7 +32,7 @@ export default function Students() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
 
-  // ⚡ 0ms INSTANT RENDER: Initialize with local cache + roster (108 records up front!)
+  // ⚡ 0ms INSTANT RENDER: Initialize with local cache + roster (0 up front when empty)
   const [students, setStudents] = useState(() => getInitialStudentsSync());
   const [isSyncing, setIsSyncing] = useState(false);
   const [firebaseStatus, setFirebaseStatus] = useState(null);
@@ -41,9 +42,7 @@ export default function Students() {
     if (showLoadingState) setIsSyncing(true);
     try {
       const data = await getAllStudents();
-      if (data && data.length > 0) {
-        setStudents(data);
-      }
+      setStudents(data || []);
     } catch (e) {
       console.error('Failed to load background students:', e);
     } finally {
@@ -83,6 +82,36 @@ export default function Students() {
       setTimeout(() => setStatusNotice(null), 5000);
     }
   };
+
+  // Handle Purge / Delete All Student Records
+  const handleDeleteAllStudents = async () => {
+    if (
+      !window.confirm(
+        'WARNING: Are you sure you want to delete ALL candidate records from both local storage and Cloud Firestore? This action cannot be undone.'
+      )
+    ) {
+      return;
+    }
+
+    setIsSyncing(true);
+    setStatusNotice({ type: 'info', msg: 'Deleting all student records from database and Cloud Firestore...' });
+
+    try {
+      await clearAllStudents();
+      setStudents([]);
+      setStatusNotice({
+        type: 'success',
+        msg: 'All student records deleted successfully! Database is completely empty and ready for your dataset.',
+      });
+      checkFirebaseConnection().then((res) => setFirebaseStatus(res));
+    } catch (err) {
+      setStatusNotice({ type: 'error', msg: 'Failed to clear records: ' + err.message });
+    } finally {
+      setIsSyncing(false);
+      setTimeout(() => setStatusNotice(null), 6000);
+    }
+  };
+
 
   // Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -266,11 +295,19 @@ export default function Students() {
               </span>
             )}
 
-            <button className="btn btn-secondary btn-sm" onClick={handleSyncToFirebase} title="Sync all 108 records to Cloud Firestore">
+            <button className="btn btn-secondary btn-sm" onClick={handleSyncToFirebase} title="Sync all records to Cloud Firestore">
               <MdCloudUpload /> Sync to Firebase
             </button>
             <button className="btn btn-ghost btn-sm" onClick={() => refreshStudents(true)} title="Refresh list">
               <MdRefresh /> {isSyncing ? 'Syncing...' : 'Refresh'}
+            </button>
+            <button
+              className="btn btn-ghost btn-sm"
+              style={{ color: '#dc2626', border: '1px solid #fca5a5', background: '#fef2f2' }}
+              onClick={handleDeleteAllStudents}
+              title="Delete ALL candidate records from database & Cloud Firestore"
+            >
+              <MdDelete /> Delete All Records
             </button>
             <Link to="/admin/settings" className="btn btn-secondary btn-sm">
               <MdFileUpload /> Import CSV / PDF

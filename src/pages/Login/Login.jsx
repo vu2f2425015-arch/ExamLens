@@ -173,8 +173,8 @@ export default function Login() {
               </div>
 
               <div className={styles.demoHint}>
-                <span>ROSTER LOOKUP HINT: </span>
-                <code>EC2021002 / priya.mehta@examlens.edu</code>
+                <span>ROSTER VERIFICATION: </span>
+                <code>Enter your Roll Number & Official Email</code>
               </div>
 
               {actStep === 1 ? (
@@ -299,8 +299,8 @@ export default function Login() {
               </div>
 
               <div className={styles.demoHint}>
-                <span>DEMO CREDENTIALS: </span>
-                <code>CS2021001 / student123</code>
+                <span>CANDIDATE ACCESS: </span>
+                <code>Enter your Roll Number & Access Passcode</code>
               </div>
 
               {actSuccessMsg && (

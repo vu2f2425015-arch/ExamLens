@@ -5,6 +5,7 @@ import {
   getDocs,
   setDoc,
   addDoc,
+  deleteDoc,
   query,
   where,
   serverTimestamp,
@@ -73,6 +74,40 @@ export function saveLocalStorageStudents(studentsArray) {
     console.error('LocalStorage save failed:', err);
     return [];
   }
+}
+
+/**
+ * Delete all student documents from LocalStorage, memory, and Cloud Firestore.
+ */
+export async function clearAllStudents() {
+  // 1. Clear LocalStorage
+  try {
+    localStorage.removeItem('examlens_custom_students');
+  } catch (e) {
+    console.error('Failed to clear LocalStorage students:', e);
+  }
+
+  // 2. Clear memory student roster object
+  Object.keys(studentRoster).forEach((key) => {
+    delete studentRoster[key];
+  });
+
+  // 3. Clear Cloud Firestore 'students' collection
+  if (isFirebaseConfigured() && db) {
+    try {
+      const snapshot = await withTimeout(getDocs(collection(db, 'students')), 4000);
+      if (snapshot && !snapshot.empty) {
+        const deletePromises = snapshot.docs.map((docSnap) =>
+          deleteDoc(doc(db, 'students', docSnap.id))
+        );
+        await Promise.allSettled(deletePromises);
+      }
+    } catch (error) {
+      console.warn('[Firestore Clear Notice]', error);
+    }
+  }
+
+  return true;
 }
 
 /**
@@ -207,8 +242,6 @@ export async function getAllStudents() {
           const roll = s.rollNumber || s.id;
           if (roll) map.set(roll, s);
         });
-        const firestoreList = Array.from(map.values());
-        saveLocalStorageStudents(firestoreList);
       }
     } catch (e) {
       console.warn('Firestore students fetch failed, using local roster.', e);

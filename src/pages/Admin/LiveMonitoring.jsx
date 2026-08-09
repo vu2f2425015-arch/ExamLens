@@ -5,7 +5,6 @@ import WebcamPanel from '../../components/WebcamPanel/WebcamPanel';
 import ActivityLog from '../../components/ActivityLog/ActivityLog';
 import LiveChat from '../../components/LiveChat/LiveChat';
 import AIStatusBadge from '../../components/AIStatusBadge/AIStatusBadge';
-import students from '../../data/students.json';
 import {
   MdPause, MdPlayArrow, MdWarning, MdStop, MdVideocam, MdMic,
   MdSignalWifi4Bar, MdLock, MdPerson, MdTimer, MdGridView,
@@ -14,24 +13,102 @@ import {
 
 const EXAM_SUBJECTS = ['DBMS', 'Operating Systems', 'Computer Networks', 'Machine Learning'];
 
-const INITIAL_CANDIDATES = students.filter(s => s.status === 'active').map((s, i) => ({
-  ...s,
-  examName: EXAM_SUBJECTS[i % EXAM_SUBJECTS.length],
-  timeLeftSeconds: (58 - (i % 5) * 6) * 60 + ((25 + i * 13) % 60),
-  connection: i % 4 === 0 ? 'Fair' : 'Good',
-  violations: i % 4,
-  status: i % 4 === 3 ? 'CRITICAL' : i % 4 === 2 ? 'WARNING' : 'NORMAL',
-  isPaused: false,
-  logs: [
-    { id: 1, time: new Date().toLocaleTimeString(), type: 'Face Verified', severity: 'low', icon: '✅' },
-    ...(i % 2 === 1 ? [{ id: 2, time: new Date(Date.now() - 120000).toLocaleTimeString(), type: 'Looking Away', severity: 'warning', icon: '👀' }] : []),
-    ...(i % 4 >= 2 ? [{ id: 3, time: new Date(Date.now() - 60000).toLocaleTimeString(), type: 'Tab Switch Attempt', severity: 'danger', icon: '🔄' }] : []),
-  ],
-}));
+const DEFAULT_CANDIDATES = [
+  {
+    id: 'STU_CS2026010',
+    name: 'Aarav Sharma',
+    rollNumber: 'CS2026010',
+    department: 'Computer Science',
+    status: 'NORMAL',
+    examName: 'DBMS',
+    timeLeftSeconds: 3450,
+    connection: 'Good',
+    violations: 0,
+    isPaused: false,
+    logs: [
+      { id: 1, time: new Date().toLocaleTimeString(), type: 'Face Verified', severity: 'low', icon: '✅' },
+    ],
+  },
+  {
+    id: 'STU_EC2026011',
+    name: 'Riya Sen',
+    rollNumber: 'EC2026011',
+    department: 'Electronics',
+    status: 'WARNING',
+    examName: 'Operating Systems',
+    timeLeftSeconds: 2890,
+    connection: 'Good',
+    violations: 1,
+    isPaused: false,
+    logs: [
+      { id: 2, time: new Date(Date.now() - 120000).toLocaleTimeString(), type: 'Looking Away', severity: 'warning', icon: '👀' },
+    ],
+  },
+  {
+    id: 'STU_ME2026012',
+    name: 'Kabir Mehta',
+    rollNumber: 'ME2026012',
+    department: 'Mechanical',
+    status: 'CRITICAL',
+    examName: 'Computer Networks',
+    timeLeftSeconds: 1980,
+    connection: 'Fair',
+    violations: 3,
+    isPaused: false,
+    logs: [
+      { id: 3, time: new Date(Date.now() - 60000).toLocaleTimeString(), type: 'Multiple Faces Detected', severity: 'critical', icon: '👥' },
+    ],
+  },
+  {
+    id: 'STU_CS2026013',
+    name: 'Ananya Gupta',
+    rollNumber: 'CS2026013',
+    department: 'Computer Science',
+    status: 'NORMAL',
+    examName: 'Machine Learning',
+    timeLeftSeconds: 3200,
+    connection: 'Good',
+    violations: 0,
+    isPaused: false,
+    logs: [
+      { id: 4, time: new Date().toLocaleTimeString(), type: 'Face Verified', severity: 'low', icon: '✅' },
+    ],
+  },
+  {
+    id: 'STU_EC2026014',
+    name: 'Rohan Verma',
+    rollNumber: 'EC2026014',
+    department: 'Electronics',
+    status: 'WARNING',
+    examName: 'DBMS',
+    timeLeftSeconds: 2150,
+    connection: 'Fair',
+    violations: 2,
+    isPaused: false,
+    logs: [
+      { id: 5, time: new Date(Date.now() - 180000).toLocaleTimeString(), type: 'Tab Switch Attempt', severity: 'danger', icon: '🔄' },
+    ],
+  },
+  {
+    id: 'STU_CS2026015',
+    name: 'Priya Singh',
+    rollNumber: 'CS2026015',
+    department: 'Computer Science',
+    status: 'NORMAL',
+    examName: 'Operating Systems',
+    timeLeftSeconds: 3100,
+    connection: 'Good',
+    violations: 0,
+    isPaused: false,
+    logs: [
+      { id: 6, time: new Date().toLocaleTimeString(), type: 'Face Verified', severity: 'low', icon: '✅' },
+    ],
+  },
+];
 
 export default function LiveMonitoring() {
-  const [candidates, setCandidates] = useState(INITIAL_CANDIDATES);
-  const [selectedId, setSelectedId] = useState(INITIAL_CANDIDATES[0]?.id);
+  const [candidates, setCandidates] = useState(DEFAULT_CANDIDATES);
+  const [selectedId, setSelectedId] = useState(DEFAULT_CANDIDATES[0].id);
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'focus'
   const [examFilter, setExamFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,6 +141,7 @@ export default function LiveMonitoring() {
 
     const eventInterval = setInterval(() => {
       setCandidates(prev => {
+        if (prev.length === 0) return prev;
         const randomIndex = Math.floor(Math.random() * prev.length);
         const randomEvent = eventPool[Math.floor(Math.random() * eventPool.length)];
         const target = prev[randomIndex];
@@ -84,7 +162,7 @@ export default function LiveMonitoring() {
                 ...c,
                 violations: newViolations,
                 status: newStatus,
-                logs: [newLog, ...c.logs].slice(0, 40),
+                logs: [newLog, ...(c.logs || [])].slice(0, 40),
               }
             : c
         );
@@ -96,27 +174,27 @@ export default function LiveMonitoring() {
 
   const filteredCandidates = candidates.filter(c => {
     const matchesExam = examFilter === 'all' || c.examName === examFilter;
-    const matchesSearch = c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          c.rollNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          c.department.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = (c.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (c.rollNumber || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (c.department || '').toLowerCase().includes(searchQuery.toLowerCase());
     return matchesExam && matchesSearch;
   });
 
-  const selectedCandidate = candidates.find(c => c.id === selectedId) || filteredCandidates[0] || candidates[0];
+  const selectedCandidate = candidates.find(c => c.id === selectedId) || filteredCandidates[0] || candidates[0] || DEFAULT_CANDIDATES[0];
 
-  const formatTimeLeft = (totalSeconds) => {
+  const formatTimeLeft = (totalSeconds = 0) => {
     const mins = Math.floor(totalSeconds / 60);
     const secs = totalSeconds % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
   };
 
-  const handleIssueWarning = (candId = selectedId) => {
+  const handleIssueWarning = (candId = selectedCandidate.id) => {
     const warningLog = {
       id: Date.now(),
       time: new Date().toLocaleTimeString(),
       type: 'Proctor Warning Issued',
       severity: 'warning',
-      icon: '⚠',
+      icon: '⚠️',
     };
     setCandidates(prev =>
       prev.map(c =>
@@ -125,20 +203,20 @@ export default function LiveMonitoring() {
               ...c,
               violations: c.violations + 1,
               status: 'WARNING',
-              logs: [warningLog, ...c.logs],
+              logs: [warningLog, ...(c.logs || [])],
             }
           : c
       )
     );
   };
 
-  const handleTogglePause = (candId = selectedId) => {
+  const handleTogglePause = (candId = selectedCandidate.id) => {
     setCandidates(prev =>
       prev.map(c => (c.id === candId ? { ...c, isPaused: !c.isPaused } : c))
     );
   };
 
-  const handleTerminate = (candId = selectedId) => {
+  const handleTerminate = (candId = selectedCandidate.id) => {
     const termLog = {
       id: Date.now(),
       time: new Date().toLocaleTimeString(),
@@ -153,7 +231,7 @@ export default function LiveMonitoring() {
               ...c,
               status: 'CRITICAL',
               isPaused: true,
-              logs: [termLog, ...c.logs],
+              logs: [termLog, ...(c.logs || [])],
             }
           : c
       )
@@ -236,62 +314,68 @@ export default function LiveMonitoring() {
 
         {/* Mode 1: ALL CANDIDATES LIVE GRID VIEW */}
         {viewMode === 'grid' ? (
-          <div className={styles.multiGrid}>
-            {filteredCandidates.map(c => (
-              <div key={c.id} className={styles.gridTile}>
-                {/* Tile Header */}
-                <div className={styles.gridTileHeader}>
-                  <div className={styles.gridCandInfo}>
-                    <div className={styles.candAvatar}>
-                      {c.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+          filteredCandidates.length > 0 ? (
+            <div className={styles.multiGrid}>
+              {filteredCandidates.map(c => (
+                <div key={c.id} className={styles.gridTile}>
+                  {/* Tile Header */}
+                  <div className={styles.gridTileHeader}>
+                    <div className={styles.gridCandInfo}>
+                      <div className={styles.candAvatar}>
+                        {(c.name || 'ST').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      </div>
+                      <div>
+                        <div className={styles.gridCandName}>{c.name}</div>
+                        <div className={styles.gridCandMeta}>{c.rollNumber}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className={styles.gridCandName}>{c.name}</div>
-                      <div className={styles.gridCandMeta}>{c.rollNumber}</div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <span className="badge badge-primary" style={{ fontSize: '0.65rem' }}>
-                      <MdTimer size={11} /> {formatTimeLeft(c.timeLeftSeconds)}
-                    </span>
-                    {c.violations > 0 && (
-                      <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>
-                        {c.violations} flags
+                    <div className="flex items-center gap-2">
+                      <span className="badge badge-primary" style={{ fontSize: '0.65rem' }}>
+                        <MdTimer size={11} /> {formatTimeLeft(c.timeLeftSeconds)}
                       </span>
-                    )}
+                      {c.violations > 0 && (
+                        <span className="badge badge-warning" style={{ fontSize: '0.65rem' }}>
+                          {c.violations} flags
+                        </span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Live Webcam Stream */}
+                  <WebcamPanel status={c.status} studentName={c.name} compact />
+
+                  {/* Tile Actions */}
+                  <div className={styles.gridTileActions}>
+                    <button
+                      className="btn btn-secondary btn-sm"
+                      style={{ flex: 1 }}
+                      onClick={() => inspectCandidate(c.id)}
+                    >
+                      <MdVisibility /> Inspect
+                    </button>
+                    <button
+                      className="btn btn-warning btn-sm btn-icon"
+                      title="Issue Warning"
+                      onClick={() => handleIssueWarning(c.id)}
+                    >
+                      <MdWarning />
+                    </button>
+                    <button
+                      className="btn btn-danger btn-sm btn-icon"
+                      title="Terminate Exam"
+                      onClick={() => handleTerminate(c.id)}
+                    >
+                      <MdStop />
+                    </button>
                   </div>
                 </div>
-
-                {/* Live Webcam Stream */}
-                <WebcamPanel status={c.status} studentName={c.name} compact />
-
-                {/* Tile Actions */}
-                <div className={styles.gridTileActions}>
-                  <button
-                    className="btn btn-secondary btn-sm"
-                    style={{ flex: 1 }}
-                    onClick={() => inspectCandidate(c.id)}
-                  >
-                    <MdVisibility /> Inspect
-                  </button>
-                  <button
-                    className="btn btn-warning btn-sm btn-icon"
-                    title="Issue Warning"
-                    onClick={() => handleIssueWarning(c.id)}
-                  >
-                    <MdWarning />
-                  </button>
-                  <button
-                    className="btn btn-danger btn-sm btn-icon"
-                    title="Terminate Exam"
-                    onClick={() => handleTerminate(c.id)}
-                  >
-                    <MdStop />
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
+              No candidates matching query filter "{searchQuery}".
+            </div>
+          )
         ) : (
           /* Mode 2: SINGLE CANDIDATE FOCUS INSPECTOR VIEW */
           <div>
@@ -309,11 +393,11 @@ export default function LiveMonitoring() {
                 {filteredCandidates.map(c => (
                   <button
                     key={c.id}
-                    className={`${styles.candidateCard} ${selectedId === c.id ? styles.selectedCard : ''}`}
+                    className={`${styles.candidateCard} ${selectedCandidate?.id === c.id ? styles.selectedCard : ''}`}
                     onClick={() => setSelectedId(c.id)}
                   >
                     <div className={styles.candAvatar}>
-                      {c.name.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
+                      {(c.name || 'ST').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()}
                     </div>
                     <div className={styles.candInfo}>
                       <div className={styles.candName}>{c.name}</div>
@@ -378,7 +462,7 @@ export default function LiveMonitoring() {
               {/* Right: Logs + Chat */}
               <div className={styles.rightPanel}>
                 <div className={styles.logWrap}>
-                  <ActivityLog logs={selectedCandidate.logs} autoScroll />
+                  <ActivityLog logs={selectedCandidate.logs || []} autoScroll />
                 </div>
                 <div className={styles.chatWrap}>
                   <LiveChat studentName={selectedCandidate.name} />

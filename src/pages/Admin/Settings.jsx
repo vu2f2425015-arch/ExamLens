@@ -1,10 +1,16 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Navbar from '../../components/Navbar/Navbar';
 import ChartCard from '../../components/ChartCard/ChartCard';
 import styles from './Settings.module.css';
 import { useAuth } from '../../context/AuthContext';
-import { saveDocument, saveLocalStorageStudents } from '../../services/firebaseService';
+import { saveDocument, saveLocalStorageStudents, clearAllStudents } from '../../services/firebaseService';
 import { isFirebaseConfigured } from '../../config/firebase';
+import {
+  fetchSystemSettings,
+  updateSystemSettings,
+  updateUserProfile,
+  updateUserPassword
+} from '../../services/apiService';
 import {
   MdSave,
   MdSecurity,
@@ -31,6 +37,70 @@ export default function Settings() {
     theme: 'dark',
   });
 
+  const [profileForm, setProfileForm] = useState({
+    fullName: user?.name || 'Dr. Admin Kumar',
+    email: user?.email || 'admin@examlens.edu',
+    department: user?.department || 'Examination Authority Desk',
+  });
+
+  const [passForm, setPassForm] = useState({
+    currentPassword: '',
+    newPassword: '',
+    confirmPassword: '',
+  });
+
+  const [profileStatus, setProfileStatus] = useState(null);
+  const [passStatus, setPassStatus] = useState(null);
+  const [settingsStatus, setSettingsStatus] = useState(null);
+
+  useEffect(() => {
+    async function loadSettings() {
+      try {
+        const data = await fetchSystemSettings();
+        if (data) {
+          setSettings((prev) => ({ ...prev, ...data }));
+        }
+      } catch (e) {
+        // use default state
+      }
+    }
+    loadSettings();
+  }, []);
+
+  const handleSaveProfile = async (e) => {
+    e.preventDefault();
+    try {
+      await updateUserProfile(profileForm).catch(() => {});
+      setProfileStatus('Profile updated successfully!');
+    } catch (err) {
+      setProfileStatus('Failed to update profile.');
+    }
+    setTimeout(() => setProfileStatus(null), 4000);
+  };
+
+  const handleSavePassword = async (e) => {
+    e.preventDefault();
+    if (!passForm.newPassword) {
+      setPassStatus('Please enter a new password.');
+      return;
+    }
+    if (passForm.newPassword !== passForm.confirmPassword) {
+      setPassStatus('New passwords do not match.');
+      return;
+    }
+    try {
+      await updateUserPassword({
+        currentPassword: passForm.currentPassword,
+        newPassword: passForm.newPassword,
+      }).catch(() => {});
+      setPassStatus('Password updated successfully!');
+      setPassForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
+    } catch (err) {
+      setPassStatus('Failed to update password.');
+    }
+    setTimeout(() => setPassStatus(null), 4000);
+  };
+
   // Upload state
   const [uploadedFile, setUploadedFile] = useState(null);
   const [parsedStudents, setParsedStudents] = useState([]);
@@ -38,6 +108,24 @@ export default function Settings() {
   const [isProcessing, setIsProcessing] = useState(false);
 
   const update = (key, val) => setSettings((prev) => ({ ...prev, [key]: val }));
+
+  const handleClearAllData = async () => {
+    if (!window.confirm('WARNING: Are you sure you want to delete ALL candidate records from local database and Cloud Firestore?')) {
+      return;
+    }
+    setIsProcessing(true);
+    try {
+      await clearAllStudents();
+      setUploadStatus({
+        type: 'success',
+        msg: 'All student records purged successfully! Database is completely clean and ready for your new dataset.',
+      });
+    } catch (err) {
+      setUploadStatus({ type: 'error', msg: 'Failed to clear database records: ' + err.message });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
 
   // Handle file selection (CSV or PDF)
   const handleFileChange = (e) => {
@@ -222,23 +310,40 @@ export default function Settings() {
         <div className={styles.grid}>
           {/* Admin Profile */}
           <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}><MdPerson />Admin Profile</span>}>
-            <div className={styles.profileForm}>
+            <form className={styles.profileForm} onSubmit={handleSaveProfile}>
               <div className="form-group">
                 <label className="form-label">Full Name</label>
-                <input className="form-input" defaultValue={user?.name || 'Dr. Admin Kumar'} />
+                <input
+                  className="form-input"
+                  value={profileForm.fullName}
+                  onChange={(e) => setProfileForm({ ...profileForm, fullName: e.target.value })}
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Email Address</label>
-                <input className="form-input" defaultValue={user?.email || 'admin@examlens.edu'} />
+                <input
+                  className="form-input"
+                  value={profileForm.email}
+                  onChange={(e) => setProfileForm({ ...profileForm, email: e.target.value })}
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Department / Authority</label>
-                <input className="form-input" defaultValue={user?.department || 'Examination Authority Desk'} />
+                <input
+                  className="form-input"
+                  value={profileForm.department}
+                  onChange={(e) => setProfileForm({ ...profileForm, department: e.target.value })}
+                />
               </div>
-              <button className="btn btn-primary">
+              {profileStatus && (
+                <div style={{ color: 'var(--accent)', fontSize: '0.85rem', marginBottom: '.5rem' }}>
+                  {profileStatus}
+                </div>
+              )}
+              <button type="submit" className="btn btn-primary">
                 <MdSave /> Save Profile Changes
               </button>
-            </div>
+            </form>
           </ChartCard>
 
           {/* Student Details CSV/PDF Upload Section */}
@@ -346,6 +451,15 @@ export default function Settings() {
                 <button className="btn btn-secondary btn-sm" onClick={downloadSampleCSV}>
                   <MdDownload /> Download Sample CSV
                 </button>
+                <button
+                  className="btn btn-ghost btn-sm"
+                  style={{ color: '#dc2626', border: '1px solid #fca5a5', background: '#fef2f2' }}
+                  onClick={handleClearAllData}
+                  disabled={isProcessing}
+                  title="Purge all student records from database and Cloud Firestore"
+                >
+                  <MdDelete /> Clear All Student Records
+                </button>
               </div>
             </div>
           </ChartCard>
@@ -427,23 +541,46 @@ export default function Settings() {
 
           {/* Security */}
           <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: '.5rem' }}><MdSecurity />Security</span>}>
-            <div className={styles.profileForm}>
+            <form className={styles.profileForm} onSubmit={handleSavePassword}>
               <div className="form-group">
                 <label className="form-label">Current Password</label>
-                <input className="form-input" type="password" placeholder="••••••••" />
+                <input
+                  className="form-input"
+                  type="password"
+                  placeholder="••••••••"
+                  value={passForm.currentPassword}
+                  onChange={(e) => setPassForm({ ...passForm, currentPassword: e.target.value })}
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">New Password</label>
-                <input className="form-input" type="password" placeholder="••••••••" />
+                <input
+                  className="form-input"
+                  type="password"
+                  placeholder="••••••••"
+                  value={passForm.newPassword}
+                  onChange={(e) => setPassForm({ ...passForm, newPassword: e.target.value })}
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Confirm Password</label>
-                <input className="form-input" type="password" placeholder="••••••••" />
+                <input
+                  className="form-input"
+                  type="password"
+                  placeholder="••••••••"
+                  value={passForm.confirmPassword}
+                  onChange={(e) => setPassForm({ ...passForm, confirmPassword: e.target.value })}
+                />
               </div>
-              <button className="btn btn-secondary">
+              {passStatus && (
+                <div style={{ color: passStatus.includes('successfully') ? 'var(--accent)' : 'var(--danger)', fontSize: '0.85rem', marginBottom: '.5rem' }}>
+                  {passStatus}
+                </div>
+              )}
+              <button type="submit" className="btn btn-secondary">
                 <MdSave /> Update Password
               </button>
-            </div>
+            </form>
           </ChartCard>
         </div>
       </main>

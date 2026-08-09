@@ -17,6 +17,8 @@ import {
   MdSend
 } from 'react-icons/md';
 
+import { submitExamAttempt } from '../../services/apiService';
+
 const MAX_VIOLATIONS = 5;
 
 export default function ExamInterface() {
@@ -62,8 +64,23 @@ export default function ExamInterface() {
     return () => { if (document.fullscreenElement) document.exitFullscreen?.(); };
   }, []);
 
-  const handleSubmit = useCallback((auto = false) => {
+  const handleSubmit = useCallback(async (auto = false) => {
     const score = calculateScore();
+    const timeTakenMin = Math.floor((totalSeconds - seconds) / 60);
+
+    // Async submit to Spring Boot backend
+    try {
+      await submitExamAttempt(id, {
+        studentId: user?.rollNumber || user?.id || 'STU_CURRENT',
+        studentName: user?.name || 'Student Candidate',
+        answers: answers,
+        timeTaken: timeTakenMin,
+        violationCount,
+      }).catch(() => {});
+    } catch (e) {
+      // ignore
+    }
+
     navigate(`/exam/${id}/results`, {
       state: {
         score,
@@ -73,10 +90,10 @@ export default function ExamInterface() {
         answered: Object.keys(answers).length,
         autoSubmit: auto,
         violationCount,
-        timeTaken: Math.floor((totalSeconds - seconds) / 60),
+        timeTaken: timeTakenMin,
       },
     });
-  }, [calculateScore, answers, navigate, id, exam, examQuestions.length, seconds, totalSeconds, violationCount]);
+  }, [calculateScore, answers, navigate, id, exam, examQuestions.length, seconds, totalSeconds, violationCount, user]);
 
   const [showSubmitConfirm, setShowSubmitConfirm] = useState(false);
 

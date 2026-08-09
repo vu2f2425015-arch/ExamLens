@@ -1,0 +1,87 @@
+# ============================================
+# ExamLens Backend — Application Configuration
+# ============================================
+
+spring:
+  application:
+    name: examlens-backend
+
+  # ── Default profile: H2 in-memory (dev) ──
+  datasource:
+    url: jdbc:h2:mem:examlens;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate:
+        format_sql: true
+
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+
+# ── JWT Configuration ──
+jwt:
+  secret: ${JWT_SECRET:examlens-dev-secret-key-minimum-256-bits-for-hs256-algorithm-do-not-use-in-production}
+  access-token-expiry-ms: 900000       # 15 minutes
+  refresh-token-expiry-ms: 604800000   # 7 days
+
+# ── Server ──
+server:
+  port: ${PORT:8080}
+
+# ── CORS ──
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:5173,http://localhost:3000}
+
+# ── Swagger/OpenAPI ──
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+  api-docs:
+    path: /v3/api-docs
+
+# ── Logging ──
+logging:
+  level:
+    com.examlens: DEBUG
+    org.springframework.security: INFO
+
+---
+# ============================================
+# Production profile (PostgreSQL)
+# ============================================
+spring:
+  config:
+    activate:
+      on-profile: prod
+
+  datasource:
+    url: ${DATABASE_URL:jdbc:postgresql://localhost:5432/examlens}
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:examlens}
+    password: ${DB_PASSWORD:examlens}
+
+  h2:
+    console:
+      enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
