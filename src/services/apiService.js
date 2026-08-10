@@ -27,6 +27,33 @@ async function request(endpoint, options = {}) {
   }
 }
 
+// ── Auth (replaces hardcoded admin/student mock auth once backend exists) ──
+export async function loginAdmin(credentials) {
+  return request('/auth/admin/login', { method: 'POST', body: JSON.stringify(credentials) });
+}
+
+export async function loginTeacher(credentials) {
+  return request('/auth/teacher/login', { method: 'POST', body: JSON.stringify(credentials) });
+}
+
+// ── Divisions ──
+export async function fetchDivisions() {
+  return request('/divisions');
+}
+
+export async function fetchDivisionRoster(divisionId) {
+  return request(`/divisions/${divisionId}/students`);
+}
+
+// ── Teachers ──
+export async function fetchTeachers() {
+  return request('/teachers');
+}
+
+export async function assignExamToDivisions(examId, divisionIds) {
+  return request(`/exams/${examId}/assign`, { method: 'POST', body: JSON.stringify({ divisionIds }) });
+}
+
 // ── Questions & Exam Submissions ──
 export async function fetchQuestionsByExam(examId) {
   return request(`/questions/exam/${examId}`);

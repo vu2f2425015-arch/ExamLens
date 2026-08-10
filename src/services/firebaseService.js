@@ -17,7 +17,10 @@ import examsData from '../data/exams.json';
 import questionsData from '../data/questions.json';
 import resultsData from '../data/results.json';
 import alertsData from '../data/alerts.json';
+import divisionsData from '../data/divisions.json';
+import teachersData from '../data/teachers.json';
 import { studentRoster } from '../data/students.js';
+import { teacherRoster } from '../data/teachers.js';
 
 /**
  * Timeout wrapper for async promises to prevent infinite hanging network calls.
@@ -62,7 +65,6 @@ export function saveLocalStorageStudents(studentsArray) {
     const merged = Array.from(map.values());
     localStorage.setItem('examlens_custom_students', JSON.stringify(merged));
 
-    // Also update in-memory student roster
     studentsArray.forEach((s) => {
       if (s.rollNumber) {
         studentRoster[s.rollNumber] = s;
@@ -77,22 +79,50 @@ export function saveLocalStorageStudents(studentsArray) {
 }
 
 /**
+ * Get custom created/assigned exams stored in browser LocalStorage.
+ */
+export function getLocalStorageExams() {
+  try {
+    const data = localStorage.getItem('examlens_custom_exams');
+    return data ? JSON.parse(data) : [];
+  } catch (e) {
+    console.error('Failed to read custom exams from LocalStorage:', e);
+    return [];
+  }
+}
+
+/**
+ * Save custom exams to LocalStorage.
+ */
+export function saveLocalStorageExams(examsArray) {
+  try {
+    const existing = getLocalStorageExams();
+    const map = new Map();
+    existing.forEach((e) => map.set(e.id, e));
+    examsArray.forEach((e) => map.set(e.id, e));
+    const merged = Array.from(map.values());
+    localStorage.setItem('examlens_custom_exams', JSON.stringify(merged));
+    return merged;
+  } catch (err) {
+    console.error('LocalStorage save exams failed:', err);
+    return [];
+  }
+}
+
+/**
  * Delete all student documents from LocalStorage, memory, and Cloud Firestore.
  */
 export async function clearAllStudents() {
-  // 1. Clear LocalStorage
   try {
     localStorage.removeItem('examlens_custom_students');
   } catch (e) {
     console.error('Failed to clear LocalStorage students:', e);
   }
 
-  // 2. Clear memory student roster object
   Object.keys(studentRoster).forEach((key) => {
     delete studentRoster[key];
   });
 
-  // 3. Clear Cloud Firestore 'students' collection
   if (isFirebaseConfigured() && db) {
     try {
       const snapshot = await withTimeout(getDocs(collection(db, 'students')), 4000);
@@ -111,7 +141,7 @@ export async function clearAllStudents() {
 }
 
 /**
- * Returns initial student list synchronously from LocalStorage and static roster (0ms instant render).
+ * Returns initial student list synchronously from LocalStorage and static roster.
  */
 export function getInitialStudentsSync() {
   const localCustom = getLocalStorageStudents();
@@ -147,7 +177,7 @@ export async function checkFirebaseConnection() {
   } catch (error) {
     console.warn('[Firebase Connection Check Notice]', error);
     return {
-      connected: true, // Firebase is configured & active!
+      connected: true,
       count: 0,
       projectId: 'examlens-84e91',
       permissionError: true,
@@ -158,8 +188,6 @@ export async function checkFirebaseConnection() {
 
 /**
  * Fetch all documents from a Firestore collection with timeout.
- * @param {string} collectionName
- * @returns {Promise<Array|null>}
  */
 export async function getCollection(collectionName) {
   if (!isFirebaseConfigured() || !db) {
@@ -176,9 +204,6 @@ export async function getCollection(collectionName) {
 
 /**
  * Fetch a single document by ID from Firestore with timeout.
- * @param {string} collectionName
- * @param {string} docId
- * @returns {Promise<object|null>}
  */
 export async function getDocument(collectionName, docId) {
   if (!isFirebaseConfigured() || !db || !docId) {
@@ -196,9 +221,6 @@ export async function getDocument(collectionName, docId) {
 
 /**
  * Save or update a document in Firestore with timeout.
- * @param {string} collectionName
- * @param {string} docId
- * @param {object} data
  */
 export async function saveDocument(collectionName, docId, data) {
   if (!isFirebaseConfigured() || !db) {
@@ -269,14 +291,60 @@ export async function getStudent(rollNumber) {
 }
 
 /**
- * Get all exams from Firestore or fallback JSON.
+ * Get all divisions from Firestore or fallback JSON.
+ */
+export async function getDivisions() {
+  const firestoreDivisions = await getCollection('divisions');
+  if (firestoreDivisions && firestoreDivisions.length > 0) {
+    return firestoreDivisions;
+  }
+  return divisionsData;
+}
+
+/**
+ * Get all teachers from Firestore or fallback JSON.
+ */
+export async function getTeachers() {
+  const firestoreTeachers = await getCollection('teachers');
+  if (firestoreTeachers && firestoreTeachers.length > 0) {
+    return firestoreTeachers;
+  }
+  return Object.values(teacherRoster).length > 0 ? Object.values(teacherRoster) : teachersData;
+}
+
+/**
+ * Get single teacher record by employee ID.
+ */
+export async function getTeacher(employeeId) {
+  if (!employeeId) return null;
+  const cleanEmpId = employeeId.trim().toUpperCase();
+
+  const firestoreTeacher = await getDocument('teachers', cleanEmpId);
+  if (firestoreTeacher) return firestoreTeacher;
+
+  return teacherRoster[cleanEmpId] || teachersData.find((t) => t.employeeId.toUpperCase() === cleanEmpId) || null;
+}
+
+/**
+ * Get all exams merged from static JSON, LocalStorage custom exams, and Cloud Firestore.
  */
 export async function getExams() {
-  const firestoreExams = await getCollection('exams');
-  if (firestoreExams && firestoreExams.length > 0) {
-    return firestoreExams;
+  const map = new Map();
+  examsData.forEach((e) => map.set(e.id, e));
+  getLocalStorageExams().forEach((e) => map.set(e.id, e));
+
+  if (isFirebaseConfigured() && db) {
+    try {
+      const firestoreExams = await getCollection('exams');
+      if (firestoreExams && firestoreExams.length > 0) {
+        firestoreExams.forEach((e) => map.set(e.id, e));
+      }
+    } catch (e) {
+      console.warn('Firestore exams fetch warning:', e);
+    }
   }
-  return examsData;
+
+  return Array.from(map.values());
 }
 
 /**
@@ -382,23 +450,27 @@ export async function seedFirestoreData() {
     console.log('[ExamLens Seed] Starting Firestore database seeding...');
     const allStus = getInitialStudentsSync();
 
-    // Seed all 108 Students in parallel batches
     const batchPromises = allStus.map((stu) =>
       saveDocument('students', stu.rollNumber, stu)
     );
     await Promise.allSettled(batchPromises);
 
-    // Seed Exams
     for (const exam of examsData) {
       await saveDocument('exams', exam.id, exam);
     }
 
-    // Seed Results
+    for (const div of divisionsData) {
+      await saveDocument('divisions', div.id, div);
+    }
+
+    for (const tch of teachersData) {
+      await saveDocument('teachers', tch.employeeId, tch);
+    }
+
     for (const res of resultsData) {
       await saveDocument('results', res.id, res);
     }
 
-    // Seed Alerts
     for (const alert of alertsData) {
       await saveDocument('alerts', alert.id, alert);
     }

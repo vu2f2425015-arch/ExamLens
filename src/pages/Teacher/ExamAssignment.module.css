@@ -1,0 +1,190 @@
+.page {
+  padding: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 1.75rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text-ink);
+  margin-bottom: 0.25rem;
+}
+
+.subtitle {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+
+.formContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.sectionCard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--border-rule);
+}
+
+.sectionIcon {
+  font-size: 1.2rem;
+  color: var(--primary-slate);
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-ink);
+}
+
+.formGrid2 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.formGrid3 {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+}
+
+@media (max-width: 768px) {
+  .formGrid2, .formGrid3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Fix 3.2: Selectable Division Cards */
+.divisionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+
+.divisionCard {
+  background: var(--surface-subtle);
+  border: 1.5px solid var(--border-rule);
+  border-radius: var(--radius-sm);
+  padding: 1rem;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  position: relative;
+}
+
+.divisionCard:hover {
+  border-color: var(--border-strong);
+  background: var(--surface-hover);
+}
+
+.divisionCardSelected {
+  background: var(--stamp-slate-bg);
+  border-color: var(--primary-slate);
+  box-shadow: var(--shadow-sm);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.divCode {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--primary-slate);
+}
+
+.checkBadge {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  border: 1.5px solid var(--border-rule);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: transparent;
+  transition: all var(--transition-fast);
+}
+
+.checkBadgeSelected {
+  background: var(--primary-slate);
+  border-color: var(--primary-slate);
+  color: #ffffff;
+}
+
+.divName {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--text-ink);
+}
+
+.divMeta {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+}
+
+/* Fix 3.3: Live Summary Footer */
+.summaryFooter {
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-md);
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  box-shadow: var(--shadow-sm);
+  margin-top: 0.5rem;
+}
+
+@media (max-width: 600px) {
+  .summaryFooter {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+.summaryText {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.925rem;
+  color: var(--text-ink);
+}
+
+.summaryHighlight {
+  font-weight: 700;
+  color: var(--primary-slate);
+  font-family: var(--font-mono);
+}
+
+.actionBtns {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}

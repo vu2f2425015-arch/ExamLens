@@ -1,1 +1,36 @@
-[]
+[
+  {
+    "id": "EXAM_CS401",
+    "name": "Data Structures & Algorithms Mid-Term",
+    "subject": "Data Structures",
+    "faculty": "Dr. Meera Iyer",
+    "assignedTeacherId": "FAC2026001",
+    "divisionIds": ["DIV001", "DIV002"],
+    "description": "Comprehensive evaluation covering arrays, linked lists, trees, graphs, and algorithmic complexity.",
+    "date": "2026-08-15",
+    "time": "10:00 AM",
+    "duration": 90,
+    "totalMarks": 100,
+    "passingMarks": 40,
+    "enrolledStudents": 8,
+    "totalQuestions": 20,
+    "status": "upcoming"
+  },
+  {
+    "id": "EXAM_EC601",
+    "name": "Digital Signal Processing Final Exam",
+    "subject": "Digital Signal Processing",
+    "faculty": "Prof. Rajesh Sharma",
+    "assignedTeacherId": "FAC2026002",
+    "divisionIds": ["DIV003"],
+    "description": "Advanced exam on Fourier transform, Z-transform, and digital filter design.",
+    "date": "2026-08-20",
+    "time": "02:00 PM",
+    "duration": 120,
+    "totalMarks": 100,
+    "passingMarks": 40,
+    "enrolledStudents": 4,
+    "totalQuestions": 25,
+    "status": "upcoming"
+  }
+]

@@ -329,7 +329,7 @@ a:hover {
   color: var(--stamp-slate);
   border-color: var(--stamp-slate-border);
 }
-.badge-accent, .stamp-green {
+.badge-accent, .badge-success, .stamp-green {
   background: var(--stamp-green-bg);
   color: var(--stamp-green);
   border-color: var(--stamp-green-border);
@@ -577,34 +577,51 @@ a:hover {
 .pulse-dot.yellow { background: var(--stamp-ochre); }
 
 /* ── Tables ── */
-.data-table {
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+}
+
+.table, .data-table {
   width: 100%;
   border-collapse: collapse;
   font-size: 0.875rem;
+  font-family: var(--font-sans);
   background: var(--surface-card);
-  border: 1px solid var(--border-rule);
+  text-align: left;
 }
-.data-table th {
-  padding: 0.75rem 1rem;
+
+.table th, .data-table th {
+  padding: 0.85rem 1.15rem;
   text-align: left;
   color: var(--text-ink);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.75rem;
   font-family: var(--font-sans);
   text-transform: uppercase;
   letter-spacing: 0.05em;
   border-bottom: 1px solid var(--border-rule);
   background: var(--surface-subtle);
+  white-space: nowrap;
 }
-.data-table td {
-  padding: 0.75rem 1rem;
+
+.table td, .data-table td {
+  padding: 0.85rem 1.15rem;
   border-bottom: 1px solid var(--border-rule);
   color: var(--text-body);
+  vertical-align: middle;
+  white-space: nowrap;
 }
-.data-table tr:hover td {
+
+.table tr:hover td, .data-table tr:hover td {
   background: var(--surface-hover);
 }
-.data-table tr:last-child td { border-bottom: none; }
+
+.table tr:last-child td, .data-table tr:last-child td { border-bottom: none; }
 
 /* ── Progress Bar ── */
 .progress-bar {

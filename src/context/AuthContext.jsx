@@ -1,13 +1,28 @@
 import React, { createContext, useContext, useReducer, useEffect } from 'react';
 import { onAuthStateChanged, signOut as firebaseSignOut } from 'firebase/auth';
 import { auth, isFirebaseConfigured } from '../config/firebase';
-import { authenticateStudent } from '../data/authService';
+import { authenticateStudent, authenticateTeacher } from '../data/authService';
+import { hashPassword } from '../utils/hash';
 
 const AuthContext = createContext(null);
 
+const ADMIN_ID = import.meta.env.VITE_ADMIN_ID || 'admin';
+const ADMIN_PASSWORD_HASH =
+  import.meta.env.VITE_ADMIN_PASSWORD_HASH ||
+  '240be518fabd2724ddb6f04eeb1da5967448d7e831c08c8fa822809f74c720a9'; // default SHA-256 for 'admin123'
+
+const DEFAULT_ADMIN_USER = {
+  id: 'ADM001',
+  name: 'Dr. Admin Kumar',
+  email: 'admin@examlens.edu',
+  role: 'admin',
+  department: 'Examination Cell',
+  avatar: null,
+};
+
 const initialState = {
   isAuthenticated: false,
-  role: null, // 'admin' | 'student'
+  role: null, // 'admin' | 'teacher' | 'student'
   user: null,
 };
 
@@ -25,20 +40,6 @@ function authReducer(state, action) {
       return state;
   }
 }
-
-// Mock credentials for admin
-const ADMIN_CREDENTIALS = {
-  id: 'admin',
-  password: 'admin123',
-  user: {
-    id: 'ADM001',
-    name: 'Dr. Admin Kumar',
-    email: 'admin@examlens.edu',
-    role: 'admin',
-    department: 'Examination Cell',
-    avatar: null,
-  },
-};
 
 export function AuthProvider({ children }) {
   const [state, dispatch] = useReducer(authReducer, initialState, () => {
@@ -61,7 +62,6 @@ export function AuthProvider({ children }) {
 
     const unsubscribe = onAuthStateChanged(auth, (firebaseUser) => {
       if (firebaseUser) {
-        // If logged in via Firebase Auth, update Context state
         dispatch({
           type: 'LOGIN',
           payload: {
@@ -82,12 +82,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   /**
-   * Async signIn function for student credentials authentication.
-   * Rejects with Error if account is not activated yet or credentials are invalid.
-   *
-   * @param {string} rollNumberOrEmail
-   * @param {string} password
-   * @returns {Promise<{ success: boolean, user: object }>}
+   * Async signIn function for student authentication.
    */
   const signIn = async (rollNumberOrEmail, password) => {
     try {
@@ -100,16 +95,40 @@ export function AuthProvider({ children }) {
   };
 
   /**
-   * Backward-compatible login helper supporting both admin and student roles.
+   * Async signIn function for teacher authentication.
+   */
+  const signInTeacher = async (employeeIdOrEmail, password) => {
+    try {
+      const user = await authenticateTeacher(employeeIdOrEmail, password);
+      dispatch({ type: 'LOGIN', payload: { role: 'teacher', user } });
+      return { success: true, user };
+    } catch (err) {
+      return Promise.reject(err);
+    }
+  };
+
+  /**
+   * Multi-role login helper supporting admin, teacher, and student roles.
    */
   const login = async (role, creds) => {
     const { id, password } = creds || {};
+
     if (role === 'admin') {
-      if (id !== ADMIN_CREDENTIALS.id || password !== ADMIN_CREDENTIALS.password) {
-        return { success: false, error: 'Invalid credentials. Please try again.' };
+      const hashedInput = await hashPassword(password);
+      if (id !== ADMIN_ID || hashedInput !== ADMIN_PASSWORD_HASH) {
+        return { success: false, error: 'Invalid admin credentials. Please try again.' };
       }
-      dispatch({ type: 'LOGIN', payload: { role: 'admin', user: ADMIN_CREDENTIALS.user } });
-      return { success: true, user: ADMIN_CREDENTIALS.user };
+      dispatch({ type: 'LOGIN', payload: { role: 'admin', user: DEFAULT_ADMIN_USER } });
+      return { success: true, user: DEFAULT_ADMIN_USER };
+    }
+
+    if (role === 'teacher') {
+      try {
+        const res = await signInTeacher(id, password);
+        return res;
+      } catch (err) {
+        return { success: false, error: err.message };
+      }
     }
 
     if (role === 'student') {
@@ -137,7 +156,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ ...state, login, signIn, logout }}>
+    <AuthContext.Provider value={{ ...state, login, signIn, signInTeacher, logout }}>
       {children}
     </AuthContext.Provider>
   );

@@ -37,7 +37,7 @@
   overflow-y: auto;
   padding: 0.5rem;
   display: flex;
-  flex-direction: column-reverse;
+  flex-direction: column;
   gap: 0.35rem;
 }
 

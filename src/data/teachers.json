@@ -1,0 +1,20 @@
+[
+  {
+    "id": "TCH001",
+    "employeeId": "FAC2026001",
+    "name": "Dr. Meera Iyer",
+    "email": "meera.iyer@examlens.edu",
+    "department": "Computer Science",
+    "activated": false,
+    "assignedDivisionIds": ["DIV001", "DIV002"]
+  },
+  {
+    "id": "TCH002",
+    "employeeId": "FAC2026002",
+    "name": "Prof. Rajesh Sharma",
+    "email": "rajesh.sharma@examlens.edu",
+    "department": "Electronics & Comm",
+    "activated": false,
+    "assignedDivisionIds": ["DIV003"]
+  }
+]

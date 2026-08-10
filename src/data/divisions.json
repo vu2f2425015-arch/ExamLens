@@ -1,0 +1,37 @@
+[
+  {
+    "id": "DIV001",
+    "code": "CS2026-A",
+    "department": "Computer Science",
+    "semester": 4,
+    "name": "CS Sem 4 - Division A"
+  },
+  {
+    "id": "DIV002",
+    "code": "CS2026-B",
+    "department": "Computer Science",
+    "semester": 4,
+    "name": "CS Sem 4 - Division B"
+  },
+  {
+    "id": "DIV003",
+    "code": "EC2026-A",
+    "department": "Electronics & Comm",
+    "semester": 6,
+    "name": "EC Sem 6 - Division A"
+  },
+  {
+    "id": "DIV004",
+    "code": "IT2026-A",
+    "department": "Information Technology",
+    "semester": 4,
+    "name": "IT Sem 4 - Division A"
+  },
+  {
+    "id": "DIV005",
+    "code": "EC2026-B",
+    "department": "Electronics & Comm",
+    "semester": 2,
+    "name": "EC Sem 2 - Division B"
+  }
+]

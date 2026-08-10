@@ -8,8 +8,16 @@ export default function ProtectedRoute({ children, requiredRole }) {
     return <Navigate to="/" replace />;
   }
 
-  if (requiredRole && role !== requiredRole) {
-    return <Navigate to={role === 'admin' ? '/admin/dashboard' : '/student/dashboard'} replace />;
+  const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
+
+  if (requiredRole && !allowedRoles.includes(role)) {
+    const fallback =
+      role === 'admin'
+        ? '/admin/dashboard'
+        : role === 'teacher'
+        ? '/teacher/dashboard'
+        : '/student/dashboard';
+    return <Navigate to={fallback} replace />;
   }
 
   return children;

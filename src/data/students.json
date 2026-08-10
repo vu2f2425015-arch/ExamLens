@@ -1,1 +1,122 @@
-[]
+[
+  {
+    "id": "STU001",
+    "rollNumber": "CS2021001",
+    "name": "Arjun Sharma",
+    "email": "arjun.sharma@examlens.edu",
+    "department": "Computer Science",
+    "semester": 4,
+    "divisionId": "DIV001",
+    "gpa": 8.8,
+    "status": "Verified",
+    "activated": false
+  },
+  {
+    "id": "STU002",
+    "rollNumber": "CS2021002",
+    "name": "Priya Mehta",
+    "email": "priya.mehta@examlens.edu",
+    "department": "Computer Science",
+    "semester": 4,
+    "divisionId": "DIV001",
+    "gpa": 9.1,
+    "status": "Verified",
+    "activated": false
+  },
+  {
+    "id": "STU003",
+    "rollNumber": "CS2021003",
+    "name": "Rohan Verma",
+    "email": "rohan.verma@examlens.edu",
+    "department": "Computer Science",
+    "semester": 4,
+    "divisionId": "DIV001",
+    "gpa": 7.8,
+    "status": "Verified",
+    "activated": false
+  },
+  {
+    "id": "STU004",
+    "rollNumber": "CS2021004",
+    "name": "Ananya Roy",
+    "email": "ananya.roy@examlens.edu",
+    "department": "Computer Science",
+    "semester": 4,
+    "divisionId": "DIV001",
+    "gpa": 8.5,
+    "status": "Verified",
+    "activated": false
+  },
+  {
+    "id": "STU005",
+    "rollNumber": "CS2021005",
+    "name": "Kabir Das",
+    "email": "kabir.das@examlens.edu",
+    "department": "Computer Science",
+    "semester": 4,
+    "divisionId": "DIV002",
+    "gpa": 8.2,
+    "status": "Verified",
+    "activated": false
+  },
+  {
+    "id": "STU006",
+    "rollNumber": "CS2021006",
+    "name": "Sneha Patel",
+    "email": "sneha.patel@examlens.edu",
+    "department": "Computer Science",
+    "semester": 4,
+    "divisionId": "DIV002",
+    "gpa": 8.9,
+    "status": "Verified",
+    "activated": false
+  },
+  {
+    "id": "STU007",
+    "rollNumber": "CS2021007",
+    "name": "Vikram Singh",
+    "email": "vikram.singh@examlens.edu",
+    "department": "Computer Science",
+    "semester": 4,
+    "divisionId": "DIV002",
+    "gpa": 7.4,
+    "status": "Verified",
+    "activated": false
+  },
+  {
+    "id": "STU008",
+    "rollNumber": "CS2021008",
+    "name": "Neha Gupta",
+    "email": "neha.gupta@examlens.edu",
+    "department": "Computer Science",
+    "semester": 4,
+    "divisionId": "DIV002",
+    "gpa": 8.6,
+    "status": "Verified",
+    "activated": false
+  },
+  {
+    "id": "STU009",
+    "rollNumber": "EC2021001",
+    "name": "Aditya Rao",
+    "email": "aditya.rao@examlens.edu",
+    "department": "Electronics & Comm",
+    "semester": 6,
+    "divisionId": "DIV003",
+    "gpa": 8.0,
+    "status": "Verified",
+    "activated": false
+  },
+  {
+    "id": "STU010",
+    "rollNumber": "EC2021002",
+    "name": "Kavya Nair",
+    "email": "kavya.nair@examlens.edu",
+    "department": "Electronics & Comm",
+    "semester": 6,
+    "divisionId": "DIV003",
+    "gpa": 9.2,
+    "status": "Verified",
+    "activated": false
+  }
+]

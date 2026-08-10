@@ -5,8 +5,14 @@ import { getCurrentDateTime, getInitials } from '../../utils/formatters';
 import styles from './Navbar.module.css';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
 import {
-  MdNotifications, MdSearch, MdKeyboardArrowDown,
-  MdDashboard, MdLogout, MdSettings, MdPerson, MdMenu
+  MdNotifications,
+  MdSearch,
+  MdKeyboardArrowDown,
+  MdDashboard,
+  MdLogout,
+  MdSettings,
+  MdPerson,
+  MdMenu,
 } from 'react-icons/md';
 
 export default function Navbar({ title }) {
@@ -36,12 +42,19 @@ export default function Navbar({ title }) {
 
   const handleLogout = () => {
     logout();
-    navigate('/login');
+    navigate('/');
   };
 
   const toggleMobileSidebar = () => {
     window.dispatchEvent(new Event('toggle-mobile-sidebar'));
   };
+
+  const displayRoleLabel =
+    role === 'admin'
+      ? 'Administrator'
+      : role === 'teacher'
+      ? 'Faculty Member'
+      : 'Student';
 
   return (
     <header className={styles.navbar}>
@@ -88,7 +101,7 @@ export default function Navbar({ title }) {
         <div className={styles.notifWrapper}>
           <button
             className={styles.notifBtn}
-            onClick={() => setShowNotif(v => !v)}
+            onClick={() => setShowNotif((v) => !v)}
           >
             <MdNotifications />
             {notifications > 0 && (
@@ -116,17 +129,15 @@ export default function Navbar({ title }) {
         <div className={styles.profileWrapper} ref={profileRef}>
           <button
             className={styles.profile}
-            onClick={() => setShowProfile(v => !v)}
+            onClick={() => setShowProfile((v) => !v)}
             aria-expanded={showProfile}
           >
             <div className={styles.profileAvatar}>
-              {getInitials(user?.name || 'Admin')}
+              {getInitials(user?.name || (role === 'teacher' ? 'Faculty' : 'Admin'))}
             </div>
             <div className={styles.profileInfo}>
-              <div className={styles.profileName}>{user?.name || 'Dr. Administrator'}</div>
-              <div className={styles.profileRole}>
-                {role === 'admin' ? 'Administrator' : 'Student'}
-              </div>
+              <div className={styles.profileName}>{user?.name || (role === 'teacher' ? 'Faculty Member' : 'Dr. Administrator')}</div>
+              <div className={styles.profileRole}>{displayRoleLabel}</div>
             </div>
             <MdKeyboardArrowDown
               className={styles.chevron}
@@ -140,7 +151,14 @@ export default function Navbar({ title }) {
                 <div className={styles.dropdownAvatar}>{getInitials(user?.name || 'Admin')}</div>
                 <div>
                   <div className={styles.dropdownName}>{user?.name || 'Dr. Administrator'}</div>
-                  <div className={styles.dropdownEmail}>{user?.email || (role === 'admin' ? 'admin@examlens.edu' : 'student@examlens.edu')}</div>
+                  <div className={styles.dropdownEmail}>
+                    {user?.email ||
+                      (role === 'admin'
+                        ? 'admin@examlens.edu'
+                        : role === 'teacher'
+                        ? 'meera.iyer@examlens.edu'
+                        : 'student@examlens.edu')}
+                  </div>
                 </div>
               </div>
               <div className={styles.dropdownMenu}>
@@ -148,28 +166,61 @@ export default function Navbar({ title }) {
                   <>
                     <button
                       className={styles.dropdownItem}
-                      onClick={() => { navigate('/admin/settings'); setShowProfile(false); }}
+                      onClick={() => {
+                        navigate('/admin/settings');
+                        setShowProfile(false);
+                      }}
                     >
                       <MdSettings /> System Settings
                     </button>
                     <button
                       className={styles.dropdownItem}
-                      onClick={() => { navigate('/admin/dashboard'); setShowProfile(false); }}
+                      onClick={() => {
+                        navigate('/admin/dashboard');
+                        setShowProfile(false);
+                      }}
                     >
                       <MdPerson /> Proctor Desk
+                    </button>
+                  </>
+                ) : role === 'teacher' ? (
+                  <>
+                    <button
+                      className={styles.dropdownItem}
+                      onClick={() => {
+                        navigate('/teacher/profile');
+                        setShowProfile(false);
+                      }}
+                    >
+                      <MdPerson /> Faculty Profile
+                    </button>
+                    <button
+                      className={styles.dropdownItem}
+                      onClick={() => {
+                        navigate('/teacher/dashboard');
+                        setShowProfile(false);
+                      }}
+                    >
+                      <MdPerson /> Faculty Dashboard
                     </button>
                   </>
                 ) : (
                   <>
                     <button
                       className={styles.dropdownItem}
-                      onClick={() => { navigate('/student/profile'); setShowProfile(false); }}
+                      onClick={() => {
+                        navigate('/student/profile');
+                        setShowProfile(false);
+                      }}
                     >
                       <MdPerson /> My Profile
                     </button>
                     <button
                       className={styles.dropdownItem}
-                      onClick={() => { navigate('/student/dashboard'); setShowProfile(false); }}
+                      onClick={() => {
+                        navigate('/student/dashboard');
+                        setShowProfile(false);
+                      }}
                     >
                       <MdPerson /> Student Dashboard
                     </button>

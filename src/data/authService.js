@@ -2,12 +2,17 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'fire
 import { doc, getDoc, setDoc } from 'firebase/firestore';
 import { auth, db, isFirebaseConfigured } from '../config/firebase.js';
 import { studentRoster, markStudentActivated } from './students.js';
-import { getStudent } from '../services/firebaseService.js';
+import { teacherRoster, markTeacherActivated } from './teachers.js';
+import { getStudent, getTeacher } from '../services/firebaseService.js';
+import { hashPassword } from '../utils/hash.js';
+
+const DEMO_BYPASS_ENABLED = import.meta.env.VITE_ENABLE_DEMO_BYPASS === 'true';
 
 /**
  * Local memory credentials store for mock layer mode.
  */
 const studentCredentials = {};
+const teacherCredentials = {};
 
 /**
  * Validates password format:
@@ -25,8 +30,6 @@ function validatePassword(password) {
 
 /**
  * Activates student account and registers credentials.
- * If Firebase is configured, uses Firebase Auth + Cloud Firestore.
- * Fallback to local memory roster if Firebase keys are not configured.
  *
  * @param {string} rollNumber - Student roll number
  * @param {string} password - Chosen password
@@ -58,10 +61,8 @@ export async function activateStudent(rollNumber, password) {
     const studentDocRef = doc(db, 'students', cleanRoll);
 
     try {
-      // Create user account in Firebase Auth
       await createUserWithEmailAndPassword(auth, record.email.toLowerCase(), password);
 
-      // Update Firestore document activation status
       const updatedStudent = { ...record, activated: true, rollNumber: cleanRoll };
       await setDoc(studentDocRef, updatedStudent, { merge: true });
       await markStudentActivated(cleanRoll);
@@ -96,15 +97,14 @@ export async function activateStudent(rollNumber, password) {
     throw new Error('Account is already activated. Double activation is not allowed.');
   }
 
-  // Mark record activated in roster
   await markStudentActivated(cleanRoll);
   record.activated = true;
 
-  // Store credential entry in mock authentication layer
+  const hashedPassword = await hashPassword(password);
   studentCredentials[cleanRoll] = {
     rollNumber: cleanRoll,
     email: record.email.toLowerCase(),
-    password: password,
+    passwordHash: hashedPassword,
   };
 
   return {
@@ -115,7 +115,6 @@ export async function activateStudent(rollNumber, password) {
 
 /**
  * Authenticates student credentials during sign in.
- * Uses Firebase Auth + Firestore when configured, or local roster fallback.
  *
  * @param {string} rollNumberOrEmail - Roll number or email
  * @param {string} password - Account password
@@ -129,6 +128,7 @@ export async function authenticateStudent(rollNumberOrEmail, password) {
   const cleanInput = rollNumberOrEmail.trim();
   const lowerInput = cleanInput.toLowerCase();
   const upperInput = cleanInput.toUpperCase();
+  const inputHash = await hashPassword(password);
 
   // --- LIVE FIREBASE BRANCH ---
   if (isFirebaseConfigured() && auth && db) {
@@ -152,7 +152,6 @@ export async function authenticateStudent(rollNumberOrEmail, password) {
       const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
       const firebaseUser = userCredential.user;
 
-      // Fetch full profile from Firestore
       let profileDoc = await getDoc(doc(db, 'students', rollNumber));
       let profile = profileDoc.exists() ? profileDoc.data() : null;
 
@@ -173,13 +172,13 @@ export async function authenticateStudent(rollNumberOrEmail, password) {
         role: 'student',
         department: profile.department || 'Computer Science',
         semester: profile.semester || 5,
+        divisionId: profile.divisionId || 'DIV001',
         rollNumber: profile.rollNumber || rollNumber,
         avatar: firebaseUser.photoURL || null,
         uid: firebaseUser.uid,
       };
     } catch (firebaseErr) {
-      // If user provided demo password ('student123'), auto-provision or sign in
-      if (password === 'student123') {
+      if (DEMO_BYPASS_ENABLED && password === 'student123') {
         const student = await getStudent(rollNumber);
         if (student) {
           try {
@@ -209,6 +208,7 @@ export async function authenticateStudent(rollNumberOrEmail, password) {
               role: 'student',
               department: updatedProfile.department || 'Computer Science',
               semester: updatedProfile.semester || 5,
+              divisionId: updatedProfile.divisionId || 'DIV001',
               rollNumber: updatedProfile.rollNumber || rollNumber,
               avatar: (createdUser && createdUser.photoURL) || null,
               uid: (createdUser && createdUser.uid) || `STU_${rollNumber}`,
@@ -244,12 +244,12 @@ export async function authenticateStudent(rollNumberOrEmail, password) {
     throw new Error('Invalid credentials. Account not found.');
   }
 
-  if (password === 'student123') {
+  if (DEMO_BYPASS_ENABLED && password === 'student123') {
     record.activated = true;
     studentCredentials[record.rollNumber] = {
       rollNumber: record.rollNumber,
       email: record.email.toLowerCase(),
-      password: password,
+      passwordHash: inputHash,
     };
   }
 
@@ -259,8 +259,8 @@ export async function authenticateStudent(rollNumberOrEmail, password) {
 
   const cred = studentCredentials[record.rollNumber];
 
-  if (!cred || cred.password !== password) {
-    if (password !== 'student123') {
+  if (!cred || cred.passwordHash !== inputHash) {
+    if (!DEMO_BYPASS_ENABLED || password !== 'student123') {
       throw new Error('Invalid credentials. Please try again.');
     }
   }
@@ -272,8 +272,186 @@ export async function authenticateStudent(rollNumberOrEmail, password) {
     role: 'student',
     department: record.department,
     semester: record.semester,
+    divisionId: record.divisionId || 'DIV001',
     rollNumber: record.rollNumber,
     avatar: null,
   };
 }
 
+/**
+ * Activates faculty / teacher account and registers credentials.
+ *
+ * @param {string} employeeId - Faculty employee ID (e.g. FAC2026001)
+ * @param {string} password - Chosen password
+ * @returns {Promise<{ success: boolean, teacher: object }>}
+ */
+export async function activateTeacher(employeeId, password) {
+  if (!employeeId) {
+    throw new Error('Employee ID is required.');
+  }
+
+  const cleanEmpId = employeeId.trim().toUpperCase();
+
+  if (!validatePassword(password)) {
+    throw new Error('Password must be at least 8 characters long and contain at least one number.');
+  }
+
+  // --- LIVE FIREBASE BRANCH ---
+  if (isFirebaseConfigured() && auth && db) {
+    let record = await getTeacher(cleanEmpId);
+    if (!record) throw new Error('Teacher record not found in university roster.');
+    if (record.activated) throw new Error('Account is already activated.');
+
+    const teacherDocRef = doc(db, 'teachers', cleanEmpId);
+    try {
+      await createUserWithEmailAndPassword(auth, record.email.toLowerCase(), password);
+      const updatedTeacher = { ...record, activated: true, employeeId: cleanEmpId };
+      await setDoc(teacherDocRef, updatedTeacher, { merge: true });
+      await markTeacherActivated(cleanEmpId);
+      return { success: true, teacher: updatedTeacher };
+    } catch (firebaseErr) {
+      if (firebaseErr.code === 'auth/email-already-in-use') {
+        const updatedTeacher = { ...record, activated: true, employeeId: cleanEmpId };
+        await setDoc(teacherDocRef, updatedTeacher, { merge: true });
+        await markTeacherActivated(cleanEmpId);
+        return { success: true, teacher: updatedTeacher };
+      }
+      throw new Error(firebaseErr.message || 'Firebase faculty activation failed.');
+    }
+  }
+
+  // --- LOCAL MOCK FALLBACK BRANCH ---
+  await new Promise((resolve) => setTimeout(resolve, 50));
+  const record = await getTeacher(cleanEmpId);
+  if (!record) throw new Error('Teacher record not found in university roster.');
+  if (record.activated || teacherCredentials[cleanEmpId]) {
+    throw new Error('Account is already activated.');
+  }
+
+  await markTeacherActivated(cleanEmpId);
+  record.activated = true;
+
+  const hashedPassword = await hashPassword(password);
+  teacherCredentials[cleanEmpId] = {
+    employeeId: cleanEmpId,
+    email: record.email.toLowerCase(),
+    passwordHash: hashedPassword,
+  };
+
+  return { success: true, teacher: { ...record } };
+}
+
+/**
+ * Authenticates teacher credentials during sign in.
+ *
+ * @param {string} employeeIdOrEmail
+ * @param {string} password
+ * @returns {Promise<object>} User payload object
+ */
+export async function authenticateTeacher(employeeIdOrEmail, password) {
+  if (!employeeIdOrEmail || !password) {
+    throw new Error('Please enter both Employee ID/email and password.');
+  }
+
+  const cleanInput = employeeIdOrEmail.trim();
+  const lowerInput = cleanInput.toLowerCase();
+  const upperInput = cleanInput.toUpperCase();
+  const inputHash = await hashPassword(password);
+
+  // --- LIVE FIREBASE BRANCH ---
+  if (isFirebaseConfigured() && auth && db) {
+    let emailToAuth = lowerInput;
+    let empId = upperInput;
+
+    if (!cleanInput.includes('@')) {
+      const teacher = await getTeacher(upperInput);
+      if (teacher) {
+        emailToAuth = teacher.email;
+        empId = teacher.employeeId || upperInput;
+      }
+    }
+
+    try {
+      const userCredential = await signInWithEmailAndPassword(auth, emailToAuth, password);
+      const firebaseUser = userCredential.user;
+
+      let profileDoc = await getDoc(doc(db, 'teachers', empId));
+      let profile = profileDoc.exists() ? profileDoc.data() : null;
+      if (!profile) profile = (await getTeacher(empId)) || {};
+
+      return {
+        id: profile.id || firebaseUser.uid,
+        name: profile.name || 'Faculty Member',
+        email: profile.email || firebaseUser.email,
+        role: 'teacher',
+        department: profile.department || 'Faculty',
+        employeeId: empId,
+        assignedDivisionIds: profile.assignedDivisionIds || [],
+        avatar: firebaseUser.photoURL || null,
+        uid: firebaseUser.uid,
+      };
+    } catch (firebaseErr) {
+      if (DEMO_BYPASS_ENABLED && password === 'student123') {
+        const teacher = await getTeacher(empId);
+        if (teacher) {
+          return {
+            id: teacher.id || `TCH_${empId}`,
+            name: teacher.name,
+            email: teacher.email,
+            role: 'teacher',
+            department: teacher.department,
+            employeeId: teacher.employeeId,
+            assignedDivisionIds: teacher.assignedDivisionIds || [],
+            avatar: null,
+          };
+        }
+      }
+      throw new Error(firebaseErr.message || 'Faculty authentication failed.');
+    }
+  }
+
+  // --- LOCAL MOCK FALLBACK BRANCH ---
+  await new Promise((resolve) => setTimeout(resolve, 50));
+
+  let record = Object.values(teacherRoster).find(
+    (t) => t.employeeId.toUpperCase() === upperInput || t.email.toLowerCase() === lowerInput
+  );
+  if (!record) {
+    record = await getTeacher(upperInput);
+  }
+
+  if (!record) {
+    throw new Error('Invalid credentials. Faculty record not found.');
+  }
+
+  if (DEMO_BYPASS_ENABLED && password === 'student123') {
+    record.activated = true;
+    teacherCredentials[record.employeeId] = {
+      employeeId: record.employeeId,
+      email: record.email.toLowerCase(),
+      passwordHash: inputHash,
+    };
+  }
+
+  if (!record.activated) {
+    throw new Error('Faculty account is not activated yet. Please activate your account first.');
+  }
+
+  const cred = teacherCredentials[record.employeeId];
+  if (!cred || cred.passwordHash !== inputHash) {
+    if (!DEMO_BYPASS_ENABLED || password !== 'student123') {
+      throw new Error('Invalid credentials. Please try again.');
+    }
+  }
+
+  return {
+    id: record.id,
+    name: record.name,
+    email: record.email,
+    role: 'teacher',
+    department: record.department,
+    employeeId: record.employeeId,
+    assignedDivisionIds: record.assignedDivisionIds || [],
+    avatar: null,
+  };
+}

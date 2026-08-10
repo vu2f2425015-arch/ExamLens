@@ -1,18 +1,43 @@
 import Navbar from '../../components/Navbar/Navbar';
 import styles from './Exams.module.css';
 import { formatMinutes, formatDate } from '../../utils/formatters';
-import { MdAdd, MdEdit, MdDelete, MdVisibility, MdAssignment, MdClose, MdSave } from 'react-icons/md';
+import {
+  MdAdd,
+  MdEdit,
+  MdDelete,
+  MdVisibility,
+  MdAssignment,
+  MdClose,
+  MdSave,
+  MdCalendarToday,
+  MdTimer,
+  MdPerson,
+  MdPeople,
+  MdSearch,
+} from 'react-icons/md';
 import { useState, useEffect } from 'react';
-import { getExams } from '../../services/firebaseService';
+import {
+  getExams,
+  getDivisions,
+  getTeachers,
+  saveLocalStorageExams,
+  saveDocument,
+} from '../../services/firebaseService';
 
 export default function Exams() {
   const [exams, setExams] = useState([]);
+  const [divisions, setDivisions] = useState([]);
+  const [teachers, setTeachers] = useState([]);
+  const [search, setSearch] = useState('');
   const [modalMode, setModalMode] = useState(null); // 'create' | 'edit' | 'view' | null
   const [selectedExam, setSelectedExam] = useState(null);
+
   const [formData, setFormData] = useState({
     name: '',
     subject: '',
     faculty: '',
+    assignedTeacherId: 'FAC2026001',
+    divisionIds: ['DIV001'],
     description: '',
     date: new Date().toISOString().split('T')[0],
     duration: 90,
@@ -24,22 +49,28 @@ export default function Exams() {
   });
 
   useEffect(() => {
-    async function loadExams() {
+    async function loadExamsData() {
       try {
         const data = await getExams();
         setExams(data || []);
+        const divs = await getDivisions();
+        setDivisions(divs || []);
+        const tchs = await getTeachers();
+        setTeachers(tchs || []);
       } catch (e) {
-        console.error('Failed to load exams:', e);
+        console.error('Failed to load exams data:', e);
       }
     }
-    loadExams();
+    loadExamsData();
   }, []);
 
   const handleOpenCreate = () => {
     setFormData({
       name: '',
       subject: '',
-      faculty: 'Dr. Exam Authority',
+      faculty: teachers[0]?.name || 'Dr. Meera Iyer',
+      assignedTeacherId: teachers[0]?.employeeId || 'FAC2026001',
+      divisionIds: ['DIV001'],
       description: '',
       date: new Date().toISOString().split('T')[0],
       duration: 90,
@@ -58,6 +89,8 @@ export default function Exams() {
       name: exam.name || '',
       subject: exam.subject || '',
       faculty: exam.faculty || '',
+      assignedTeacherId: exam.assignedTeacherId || 'FAC2026001',
+      divisionIds: exam.divisionIds || ['DIV001'],
       description: exam.description || '',
       date: exam.date ? String(exam.date).split('T')[0] : new Date().toISOString().split('T')[0],
       duration: exam.duration || 90,
@@ -81,6 +114,16 @@ export default function Exams() {
     }
   };
 
+  const handleToggleDivision = (divId) => {
+    setFormData((prev) => {
+      const current = prev.divisionIds || [];
+      const updated = current.includes(divId)
+        ? current.filter((d) => d !== divId)
+        : [...current, divId];
+      return { ...prev, divisionIds: updated };
+    });
+  };
+
   const handleSave = (e) => {
     e.preventDefault();
     if (!formData.name || !formData.subject) {
@@ -98,149 +141,250 @@ export default function Exams() {
         enrolledStudents: parseInt(formData.enrolledStudents, 10),
         totalQuestions: parseInt(formData.totalQuestions, 10),
       };
+      saveLocalStorageExams([newExam]);
+      saveDocument('exams', newExam.id, newExam);
       setExams((prev) => [newExam, ...prev]);
     } else if (modalMode === 'edit' && selectedExam) {
+      const updatedExam = {
+        ...selectedExam,
+        ...formData,
+        duration: parseInt(formData.duration, 10),
+        totalMarks: parseInt(formData.totalMarks, 10),
+        passingMarks: parseInt(formData.passingMarks, 10),
+        enrolledStudents: parseInt(formData.enrolledStudents, 10),
+        totalQuestions: parseInt(formData.totalQuestions, 10),
+      };
+      saveLocalStorageExams([updatedExam]);
+      saveDocument('exams', updatedExam.id, updatedExam);
       setExams((prev) =>
-        prev.map((item) =>
-          item.id === selectedExam.id
-            ? {
-                ...item,
-                ...formData,
-                duration: parseInt(formData.duration, 10),
-                totalMarks: parseInt(formData.totalMarks, 10),
-                passingMarks: parseInt(formData.passingMarks, 10),
-                enrolledStudents: parseInt(formData.enrolledStudents, 10),
-                totalQuestions: parseInt(formData.totalQuestions, 10),
-              }
-            : item
-        )
+        prev.map((item) => (item.id === selectedExam.id ? updatedExam : item))
       );
     }
     setModalMode(null);
   };
 
+  const filteredExams = exams.filter(
+    (e) =>
+      (e.name || '').toLowerCase().includes(search.toLowerCase()) ||
+      (e.subject || '').toLowerCase().includes(search.toLowerCase()) ||
+      (e.faculty || '').toLowerCase().includes(search.toLowerCase())
+  );
+
   return (
     <>
-      <Navbar title="Exams" />
+      <Navbar title="Exams Schedule" />
       <main className="page-body">
         <div className="page-header flex items-center justify-between">
           <div>
-            <h1 className="page-title">Exams</h1>
-            <p className="page-subtitle">Create, manage, and monitor all examinations</p>
+            <h1 className="page-title">Examination Papers</h1>
+            <p className="page-subtitle">Schedule, assign to divisions, and configure exam rules</p>
           </div>
           <button className="btn btn-primary" onClick={handleOpenCreate}>
-            <MdAdd /> Create Exam
+            <MdAdd /> Create New Exam
           </button>
         </div>
 
-        {/* Exam Cards Grid */}
-        {exams.length > 0 ? (
-          <div className={styles.examGrid}>
-            {exams.map((exam, i) => (
-              <div key={exam.id || i} className={styles.examCard}>
-                <div className={styles.examHeader}>
-                  <div className={styles.examIcon}><MdAssignment /></div>
-                  <span className={`badge ${
-                    exam.status === 'active' ? 'badge-accent' :
-                    exam.status === 'upcoming' ? 'badge-info' : 'badge-muted'
-                  }`}>
-                    {exam.status}
-                  </span>
+        {/* Search Bar */}
+        <div style={{ marginBottom: '1.5rem', maxWidth: '400px' }}>
+          <div className="input-wrapper">
+            <MdSearch className="input-icon" />
+            <input
+              type="text"
+              className="form-input"
+              placeholder="Search exam title, subject, or faculty..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+          </div>
+        </div>
+
+        {/* Exams Grid */}
+        <div className={styles.examGrid}>
+          {filteredExams.length === 0 ? (
+            <div style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '3rem', color: 'var(--text-muted)' }}>
+              No examination papers found. Click "Create New Exam" to schedule a paper.
+            </div>
+          ) : (
+            filteredExams.map((exam) => (
+              <div key={exam.id} className={styles.examCard}>
+                <div className={styles.examCardHeader}>
+                  <div className={styles.badgeGroup}>
+                    <span
+                      className={`badge ${
+                        exam.status === 'active'
+                          ? 'badge-accent'
+                          : exam.status === 'upcoming'
+                          ? 'badge-info'
+                          : 'badge-muted'
+                      }`}
+                    >
+                      {exam.status === 'active' ? 'LIVE' : (exam.status || 'UPCOMING').toUpperCase()}
+                    </span>
+                    <span className={styles.subjectBadge}>{exam.subject}</span>
+                  </div>
+
+                  <div className={styles.actionGroup}>
+                    <button
+                      className="btn btn-ghost btn-sm btn-icon"
+                      onClick={() => handleOpenView(exam)}
+                      title="View Overview"
+                    >
+                      <MdVisibility size={16} />
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-sm btn-icon"
+                      onClick={() => handleOpenEdit(exam)}
+                      title="Edit Exam"
+                    >
+                      <MdEdit size={16} />
+                    </button>
+                    <button
+                      className="btn btn-ghost btn-sm btn-icon"
+                      onClick={() => handleDelete(exam.id)}
+                      title="Delete Exam"
+                      style={{ color: 'var(--stamp-red)' }}
+                    >
+                      <MdDelete size={16} />
+                    </button>
+                  </div>
                 </div>
+
                 <h3 className={styles.examName}>{exam.name}</h3>
-                <p className={styles.examSubject}>{exam.subject} · {exam.faculty}</p>
-                <p className={styles.examDesc}>{exam.description}</p>
 
-                <div className={styles.examMeta}>
-                  <div className={styles.metaItem}>
-                    <span className={styles.metaKey}>Date</span>
-                    <span className={styles.metaVal}>{formatDate(exam.date)}</span>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <span className={styles.metaKey}>Duration</span>
-                    <span className={styles.metaVal}>{formatMinutes(exam.duration)}</span>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <span className={styles.metaKey}>Students</span>
-                    <span className={styles.metaVal}>{exam.enrolledStudents || 0}</span>
-                  </div>
-                  <div className={styles.metaItem}>
-                    <span className={styles.metaKey}>Questions</span>
-                    <span className={styles.metaVal}>{exam.totalQuestions || 0}</span>
-                  </div>
+                <div className={styles.facultyRow}>
+                  <MdPerson className={styles.facultyIcon} />
+                  <span>In-Charge: {exam.faculty}</span>
                 </div>
 
-                <div className={styles.examProgress}>
-                  <div className={styles.progressLabel}>
-                    <span>Passing Marks</span>
-                    <span>{exam.passingMarks || 40}/{exam.totalMarks || 100}</span>
-                  </div>
-                  <div className="progress-bar">
-                    <div className="progress-fill" style={{ width: `${((exam.passingMarks || 40)/(exam.totalMarks || 100))*100}%` }} />
-                  </div>
-                </div>
+                {exam.description && <p className={styles.examDesc}>{exam.description}</p>}
 
-                <div className={styles.examActions}>
-                  <button className="btn btn-ghost btn-sm" onClick={() => handleOpenView(exam)}>
-                    <MdVisibility /> View
-                  </button>
-                  <button className="btn btn-secondary btn-sm" onClick={() => handleOpenEdit(exam)}>
-                    <MdEdit /> Edit
-                  </button>
-                  <button className="btn btn-danger btn-sm" onClick={() => handleDelete(exam.id)}>
-                    <MdDelete />
-                  </button>
+                <div className={styles.metaGrid}>
+                  <div className={styles.metaItem}>
+                    <MdCalendarToday className={styles.metaIcon} />
+                    <span>{formatDate(exam.date)}</span>
+                  </div>
+                  <div className={styles.metaItem}>
+                    <MdTimer className={styles.metaIcon} />
+                    <span>{formatMinutes(exam.duration)}</span>
+                  </div>
+                  <div className={styles.metaItem}>
+                    <MdPeople className={styles.metaIcon} />
+                    <span>{exam.enrolledStudents || 45} Candidates</span>
+                  </div>
+                  <div className={styles.metaItem}>
+                    <span className={styles.divisionChips}>
+                      {(exam.divisionIds || ['DIV001']).map((did) => (
+                        <span key={did} className={styles.divChip}>
+                          {did}
+                        </span>
+                      ))}
+                    </span>
+                  </div>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : (
-          <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'var(--card-bg)', borderRadius: '8px', border: '1px solid var(--border-subtle)', color: 'var(--text-muted)' }}>
-            No examination papers scheduled. Click "Create Exam" to add papers.
-          </div>
-        )}
+            ))
+          )}
+        </div>
 
-        {/* Modal Dialog for Create / Edit / View */}
+        {/* Modal Dialog */}
         {modalMode && (
-          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.65)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1000, padding: '1rem' }}>
-            <div style={{ background: 'var(--card-bg)', border: '1px solid var(--border-subtle)', borderRadius: '12px', width: '100%', maxWidth: '580px', padding: '1.75rem', boxShadow: 'var(--shadow-lg)' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyBetween: 'space-between', marginBottom: '1.25rem' }}>
-                <h3 style={{ fontSize: '1.2rem', fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: '.5rem' }}>
-                  <MdAssignment style={{ color: 'var(--accent)' }} />
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.65)',
+              backdropFilter: 'blur(4px)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 1000,
+              padding: '1rem',
+            }}
+          >
+            <div
+              style={{
+                background: 'var(--surface-card)',
+                border: '1px solid var(--border-rule)',
+                borderRadius: '12px',
+                width: '100%',
+                maxWidth: '620px',
+                padding: '1.75rem',
+                boxShadow: 'var(--shadow-lg)',
+              }}
+            >
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  marginBottom: '1.25rem',
+                }}
+              >
+                <h3
+                  style={{
+                    fontSize: '1.2rem',
+                    fontWeight: 700,
+                    margin: 0,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '.5rem',
+                  }}
+                >
+                  <MdAssignment style={{ color: 'var(--primary-slate)' }} />
                   {modalMode === 'create' && 'Create Examination Paper'}
                   {modalMode === 'edit' && 'Edit Examination Details'}
                   {modalMode === 'view' && `Exam Overview: ${selectedExam?.name}`}
                 </h3>
-                <button className="btn btn-ghost btn-sm btn-icon" onClick={() => setModalMode(null)} style={{ marginLeft: 'auto' }}>
+                <button
+                  className="btn btn-ghost btn-sm btn-icon"
+                  onClick={() => setModalMode(null)}
+                  style={{ marginLeft: 'auto' }}
+                >
                   <MdClose size={20} />
                 </button>
               </div>
 
               {modalMode === 'view' && selectedExam ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                  <div><strong>Exam Title:</strong> {selectedExam.name}</div>
-                  <div><strong>Subject / Code:</strong> {selectedExam.subject}</div>
-                  <div><strong>Faculty In-Charge:</strong> {selectedExam.faculty}</div>
-                  <div><strong>Status:</strong> <span className="badge badge-accent">{selectedExam.status}</span></div>
-                  <div><strong>Scheduled Date:</strong> {formatDate(selectedExam.date)}</div>
-                  <div><strong>Duration:</strong> {formatMinutes(selectedExam.duration)}</div>
-                  <div><strong>Passing Criteria:</strong> {selectedExam.passingMarks} / {selectedExam.totalMarks} Marks</div>
-                  <div><strong>Enrolled Candidates:</strong> {selectedExam.enrolledStudents} Students</div>
-                  <div><strong>Total Question Items:</strong> {selectedExam.totalQuestions} Questions</div>
-                  <div style={{ background: 'var(--bg-subtle)', padding: '0.85rem', borderRadius: '6px', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
-                    {selectedExam.description || 'No detailed syllabus notes attached.'}
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                  <div>
+                    <strong>Exam Title:</strong> {selectedExam.name}
                   </div>
-                  <button className="btn btn-primary" onClick={() => setModalMode(null)} style={{ marginTop: '1rem' }}>
+                  <div>
+                    <strong>Subject / Code:</strong> {selectedExam.subject}
+                  </div>
+                  <div>
+                    <strong>Faculty In-Charge:</strong> {selectedExam.faculty}
+                  </div>
+                  <div>
+                    <strong>Assigned Divisions:</strong> {(selectedExam.divisionIds || []).join(', ')}
+                  </div>
+                  <div>
+                    <strong>Scheduled Date:</strong> {formatDate(selectedExam.date)}
+                  </div>
+                  <div>
+                    <strong>Duration:</strong> {formatMinutes(selectedExam.duration)}
+                  </div>
+                  <div>
+                    <strong>Passing Criteria:</strong> {selectedExam.passingMarks} / {selectedExam.totalMarks} Marks
+                  </div>
+                  <button
+                    className="btn btn-primary"
+                    onClick={() => setModalMode(null)}
+                    style={{ marginTop: '1rem' }}
+                  >
                     Close
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSave} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <form
+                  onSubmit={handleSave}
+                  style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}
+                >
                   <div className="form-group" style={{ gridColumn: 'span 2' }}>
                     <label className="form-label">Exam Title *</label>
                     <input
                       className="form-input"
-                      placeholder="e.g. Data Structures & Algorithms - End-Sem"
+                      placeholder="e.g. Data Structures & Algorithms Mid-Term"
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       required
@@ -251,7 +395,7 @@ export default function Exams() {
                     <label className="form-label">Subject / Course Code *</label>
                     <input
                       className="form-input"
-                      placeholder="e.g. Computer Science (CS301)"
+                      placeholder="e.g. Data Structures"
                       value={formData.subject}
                       onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
                       required
@@ -260,11 +404,60 @@ export default function Exams() {
 
                   <div className="form-group">
                     <label className="form-label">Faculty In-Charge</label>
-                    <input
+                    <select
                       className="form-input"
-                      value={formData.faculty}
-                      onChange={(e) => setFormData({ ...formData, faculty: e.target.value })}
-                    />
+                      value={formData.assignedTeacherId}
+                      onChange={(e) => {
+                        const tch = teachers.find((t) => t.employeeId === e.target.value);
+                        setFormData({
+                          ...formData,
+                          assignedTeacherId: e.target.value,
+                          faculty: tch ? tch.name : e.target.value,
+                        });
+                      }}
+                    >
+                      {teachers.map((t) => (
+                        <option key={t.employeeId} value={t.employeeId}>
+                          {t.name} ({t.department})
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
+                    <label className="form-label">Assign to Divisions</label>
+                    <div
+                      style={{
+                        display: 'flex',
+                        gap: '0.75rem',
+                        flexWrap: 'wrap',
+                        marginTop: '0.25rem',
+                      }}
+                    >
+                      {divisions.map((d) => (
+                        <label
+                          key={d.id}
+                          style={{
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.4rem',
+                            fontSize: '0.85rem',
+                            fontWeight: 600,
+                            padding: '0.35rem 0.65rem',
+                            border: '1px solid var(--border-rule)',
+                            borderRadius: 'var(--radius-sm)',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          <input
+                            type="checkbox"
+                            checked={(formData.divisionIds || []).includes(d.id)}
+                            onChange={() => handleToggleDivision(d.id)}
+                          />
+                          {d.code}
+                        </label>
+                      ))}
+                    </div>
                   </div>
 
                   <div className="form-group">
@@ -307,42 +500,20 @@ export default function Exams() {
                     />
                   </div>
 
-                  <div className="form-group">
-                    <label className="form-label">Enrolled Students</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={formData.enrolledStudents}
-                      onChange={(e) => setFormData({ ...formData, enrolledStudents: e.target.value })}
-                    />
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">Status</label>
-                    <select
-                      className="form-input"
-                      value={formData.status}
-                      onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  <div
+                    style={{
+                      gridColumn: 'span 2',
+                      display: 'flex',
+                      gap: '0.75rem',
+                      justifyContent: 'flex-end',
+                      marginTop: '0.5rem',
+                    }}
+                  >
+                    <button
+                      type="button"
+                      className="btn btn-secondary"
+                      onClick={() => setModalMode(null)}
                     >
-                      <option value="upcoming">Upcoming</option>
-                      <option value="active">Active (Live Now)</option>
-                      <option value="completed">Completed</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group" style={{ gridColumn: 'span 2' }}>
-                    <label className="form-label">Description / Syllabus</label>
-                    <textarea
-                      className="form-input"
-                      rows={3}
-                      value={formData.description}
-                      onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                      placeholder="Brief summary of syllabus or guidelines..."
-                    />
-                  </div>
-
-                  <div style={{ gridColumn: 'span 2', display: 'flex', gap: '0.75rem', justifyContent: 'flex-end', marginTop: '0.5rem' }}>
-                    <button type="button" className="btn btn-secondary" onClick={() => setModalMode(null)}>
                       Cancel
                     </button>
                     <button type="submit" className="btn btn-primary">

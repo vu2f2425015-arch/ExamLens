@@ -1,14 +1,18 @@
+import studentsData from './students.json';
+import { getStudent } from '../services/firebaseService.js';
+
 /**
  * Mock Firestore 'students' collection roster.
  * Keyed by roll number (uppercase) mirroring a Firestore document collection.
- * 
- * Note: No open self-registration — students only activate an existing record in this roster.
- * In production: Swapped for Firestore getDoc(doc(db, "students", rollNumber)).
  */
 export const studentRoster = {};
 
-
-import { getStudent } from '../services/firebaseService.js';
+// Initialize student roster from JSON data
+studentsData.forEach((student) => {
+  if (student.rollNumber) {
+    studentRoster[student.rollNumber.toUpperCase()] = { ...student };
+  }
+});
 
 /**
  * Roster lookup logic — checks Cloud Firestore, LocalStorage, and static roster fallback.
@@ -57,4 +61,3 @@ export async function markStudentActivated(rollNumber) {
     studentRoster[cleanRoll].activated = true;
   }
 }
-

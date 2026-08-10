@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import Navbar from '../../components/Navbar/Navbar';
 import styles from './Students.module.css';
 import {
@@ -10,9 +9,10 @@ import {
   checkFirebaseConnection,
   seedFirestoreData,
   clearAllStudents,
+  getDivisions,
 } from '../../services/firebaseService';
 import { isFirebaseConfigured } from '../../config/firebase';
-import { getInitials } from '../../utils/formatters';
+import { getInitials, formatGPA } from '../../utils/formatters';
 import {
   MdSearch,
   MdEdit,
@@ -26,25 +26,29 @@ import {
   MdCheckCircle,
   MdCloudDone,
   MdCloudUpload,
+  MdClass,
+  MdFilterList,
 } from 'react-icons/md';
 
 export default function Students() {
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
+  const [selectedDivisionFilter, setSelectedDivisionFilter] = useState('all');
 
-  // ⚡ 0ms INSTANT RENDER: Initialize with local cache + roster (0 up front when empty)
   const [students, setStudents] = useState(() => getInitialStudentsSync());
+  const [divisions, setDivisions] = useState([]);
   const [isSyncing, setIsSyncing] = useState(false);
   const [firebaseStatus, setFirebaseStatus] = useState(null);
 
-  // Background silent revalidation & Firebase status check
   const refreshStudents = async (showLoadingState = false) => {
     if (showLoadingState) setIsSyncing(true);
     try {
       const data = await getAllStudents();
       setStudents(data || []);
+      const divs = await getDivisions();
+      setDivisions(divs || []);
     } catch (e) {
-      console.error('Failed to load background students:', e);
+      console.error('Failed to load background data:', e);
     } finally {
       setIsSyncing(false);
     }
@@ -52,14 +56,11 @@ export default function Students() {
 
   useEffect(() => {
     refreshStudents(false);
-
-    // Verify Firebase connection status
     checkFirebaseConnection().then((res) => {
       setFirebaseStatus(res);
     });
   }, []);
 
-  // Trigger manual cloud sync to Firebase
   const handleSyncToFirebase = async () => {
     setIsSyncing(true);
     setStatusNotice({ type: 'info', msg: 'Syncing all candidate records to Cloud Firestore...' });
@@ -69,11 +70,11 @@ export default function Students() {
       if (res.success) {
         setStatusNotice({
           type: 'success',
-          msg: `Successfully synced ${res.count || students.length} records to Cloud Firestore (project: examlens-84e91)!`,
+          msg: `Successfully synced ${res.count || students.length} records to Cloud Firestore!`,
         });
         checkFirebaseConnection().then((res) => setFirebaseStatus(res));
       } else {
-        setStatusNotice({ type: 'error', msg: 'Cloud sync note: Saved locally. (Check Firebase rules for cloud sync)' });
+        setStatusNotice({ type: 'error', msg: 'Cloud sync note: Saved locally.' });
       }
     } catch (err) {
       setStatusNotice({ type: 'error', msg: 'Sync completed locally: ' + err.message });
@@ -83,35 +84,33 @@ export default function Students() {
     }
   };
 
-  // Handle Purge / Delete All Student Records
   const handleDeleteAllStudents = async () => {
     if (
       !window.confirm(
-        'WARNING: Are you sure you want to delete ALL candidate records from both local storage and Cloud Firestore? This action cannot be undone.'
+        'WARNING: Are you sure you want to delete ALL candidate records from local storage and Cloud Firestore?'
       )
     ) {
       return;
     }
 
     setIsSyncing(true);
-    setStatusNotice({ type: 'info', msg: 'Deleting all student records from database and Cloud Firestore...' });
+    setStatusNotice({ type: 'info', msg: 'Deleting all student records...' });
 
     try {
       await clearAllStudents();
       setStudents([]);
       setStatusNotice({
         type: 'success',
-        msg: 'All student records deleted successfully! Database is completely empty and ready for your dataset.',
+        msg: 'All student records deleted successfully!',
       });
       checkFirebaseConnection().then((res) => setFirebaseStatus(res));
     } catch (err) {
       setStatusNotice({ type: 'error', msg: 'Failed to clear records: ' + err.message });
     } finally {
       setIsSyncing(false);
-      setTimeout(() => setStatusNotice(null), 6000);
+      setTimeout(() => setStatusNotice(null), 5000);
     }
   };
-
 
   // Modal State
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
@@ -126,29 +125,29 @@ export default function Students() {
     name: '',
     email: '',
     department: 'Computer Science',
-    semester: 5,
-    gpa: 8.0,
-    status: 'active',
+    semester: 4,
+    divisionId: 'DIV001',
+    gpa: 3.8,
+    status: 'Verified',
     activated: false,
   });
 
-  // Open Modal to Add Student
   const handleOpenAddModal = () => {
     setIsEditingExisting(false);
     setFormData({
-      rollNumber: `STU${Date.now().toString().slice(-4)}`,
+      rollNumber: `CS${Date.now().toString().slice(-4)}`,
       name: '',
       email: '',
       department: 'Computer Science',
-      semester: 5,
-      gpa: 8.5,
-      status: 'active',
+      semester: 4,
+      divisionId: 'DIV001',
+      gpa: 3.8,
+      status: 'Verified',
       activated: false,
     });
     setIsEditModalOpen(true);
   };
 
-  // Open Modal to Edit Student
   const handleOpenEditModal = (stu) => {
     setIsEditingExisting(true);
     setActiveStudent(stu);
@@ -157,21 +156,20 @@ export default function Students() {
       name: stu.name || '',
       email: stu.email || '',
       department: stu.department || 'Computer Science',
-      semester: stu.semester || 5,
-      gpa: stu.gpa || 8.0,
-      status: stu.status || 'active',
+      semester: stu.semester || 4,
+      divisionId: stu.divisionId || 'DIV001',
+      gpa: stu.gpa || 3.8,
+      status: stu.status || 'Verified',
       activated: stu.activated || false,
     });
     setIsEditModalOpen(true);
   };
 
-  // Open View Modal
   const handleOpenViewModal = (stu) => {
     setActiveStudent(stu);
     setIsViewModalOpen(true);
   };
 
-  // Save Form (Add or Edit)
   const handleSaveStudent = async (e) => {
     e.preventDefault();
     if (!formData.name || !formData.rollNumber) {
@@ -185,11 +183,10 @@ export default function Students() {
       id: activeStudent?.id || `STU_${cleanRoll}`,
       rollNumber: cleanRoll,
       email: formData.email || `${cleanRoll.toLowerCase()}@examlens.edu`,
-      semester: parseInt(formData.semester, 10) || 5,
-      gpa: parseFloat(formData.gpa) || 8.0,
+      semester: parseInt(formData.semester, 10) || 4,
+      gpa: parseFloat(formData.gpa) || 3.5,
     };
 
-    // 1. Instantly save to LocalStorage & update memory state
     saveLocalStorageStudents([updatedRecord]);
 
     setStudents((prev) => {
@@ -199,24 +196,21 @@ export default function Students() {
       return Array.from(map.values());
     });
 
-    // 2. Sync to Cloud Firestore if Firebase is active
-    let cloudSynced = false;
     if (isFirebaseConfigured()) {
-      cloudSynced = await saveDocument('students', cleanRoll, updatedRecord);
+      await saveDocument('students', cleanRoll, updatedRecord);
     }
 
     setIsEditModalOpen(false);
     setStatusNotice({
       type: 'success',
       msg: isEditingExisting
-        ? `Updated candidate ${updatedRecord.name} (${cleanRoll})! ${cloudSynced ? '[Synced to Firebase]' : '[Saved to Database]'}`
-        : `Added candidate ${updatedRecord.name} (${cleanRoll})! ${cloudSynced ? '[Synced to Firebase]' : '[Saved to Database]'}`,
+        ? `Updated candidate ${updatedRecord.name} (${cleanRoll})!`
+        : `Added candidate ${updatedRecord.name} (${cleanRoll})!`,
     });
 
     setTimeout(() => setStatusNotice(null), 4000);
   };
 
-  // Delete / Remove Student
   const handleDeleteStudent = (rollNumber) => {
     if (!window.confirm(`Are you sure you want to remove candidate ${rollNumber}?`)) return;
 
@@ -238,26 +232,83 @@ export default function Students() {
     setTimeout(() => setStatusNotice(null), 4000);
   };
 
+  // Generalized CSV Import
+  const handleCSVImport = (e, type = 'student') => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async (event) => {
+      const text = event.target?.result;
+      if (typeof text !== 'string') return;
+
+      const lines = text.split(/\r?\n/).filter((l) => l.trim().length > 0);
+      if (lines.length <= 1) return;
+
+      const parsed = [];
+      for (let i = 1; i < lines.length; i++) {
+        const parts = lines[i].split(',').map((p) => p.trim().replace(/^"|"$/g, ''));
+        if (parts.length >= 3) {
+          parsed.push({
+            id: `STU_${parts[0]}`,
+            rollNumber: parts[0],
+            name: parts[1],
+            email: parts[2],
+            department: parts[3] || 'Computer Science',
+            semester: parseInt(parts[4] || '4', 10),
+            divisionId: parts[5] || 'DIV001',
+            gpa: parseFloat(parts[6] || '3.5'),
+            status: 'Verified',
+            activated: false,
+          });
+        }
+      }
+
+      saveLocalStorageStudents(parsed);
+      setStudents((prev) => {
+        const map = new Map();
+        prev.forEach((s) => map.set(s.rollNumber, s));
+        parsed.forEach((s) => map.set(s.rollNumber, s));
+        return Array.from(map.values());
+      });
+
+      setStatusNotice({
+        type: 'success',
+        msg: `Successfully imported ${parsed.length} candidate records from CSV!`,
+      });
+      setTimeout(() => setStatusNotice(null), 4000);
+    };
+    reader.readAsText(file);
+  };
+
+  const getDivisionMetrics = (divId) => {
+    const divStus = students.filter((s) => s.divisionId === divId);
+    const count = divStus.length;
+    const avgGpa =
+      count > 0 ? (divStus.reduce((acc, curr) => acc + (curr.gpa || 3.5), 0) / count).toFixed(2) : '0.00';
+    return { count, avgGpa };
+  };
+
   const filtered = students.filter((s) => {
     const matchQ =
       (s.name || '').toLowerCase().includes(query.toLowerCase()) ||
       (s.rollNumber || '').toLowerCase().includes(query.toLowerCase()) ||
       (s.department || '').toLowerCase().includes(query.toLowerCase());
     const matchF = filter === 'all' || s.status === filter;
-    return matchQ && matchF;
+    const matchDiv = selectedDivisionFilter === 'all' || s.divisionId === selectedDivisionFilter;
+    return matchQ && matchF && matchDiv;
   });
 
   return (
     <>
-      <Navbar title="Students" />
+      <Navbar title="Students Roster" />
       <main className="page-body">
         <div className="page-header flex items-center justify-between">
           <div>
-            <h1 className="page-title">Students Roster</h1>
-            <p className="page-subtitle">Add, edit, and manage registered student records</p>
+            <h1 className="page-title">Candidate Roster & Division Grid</h1>
+            <p className="page-subtitle">Manage student enrollment, division cohorts, and accounts</p>
           </div>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-            {/* Firebase Cloud Status Indicator */}
             {isFirebaseConfigured() ? (
               <span
                 style={{
@@ -272,9 +323,8 @@ export default function Students() {
                   gap: '0.35rem',
                   fontWeight: 600,
                 }}
-                title="Connected to Firebase project: examlens-84e91"
               >
-                <MdCloudDone style={{ fontSize: '1rem', color: '#16a34a' }} /> Firebase Connected ({firebaseStatus?.count ? `${firebaseStatus.count} Cloud Docs` : 'examlens-84e91'})
+                <MdCloudDone style={{ fontSize: '1rem', color: '#16a34a' }} /> Firebase Connected
               </span>
             ) : (
               <span
@@ -285,387 +335,298 @@ export default function Students() {
                   background: '#fefce8',
                   color: '#854d0e',
                   border: '1px solid #fef08a',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  fontWeight: 600,
                 }}
               >
-                Local Storage Vault Active
+                Local Storage Active
               </span>
             )}
 
-            <button className="btn btn-secondary btn-sm" onClick={handleSyncToFirebase} title="Sync all records to Cloud Firestore">
+            <button className="btn btn-secondary btn-sm" onClick={handleSyncToFirebase}>
               <MdCloudUpload /> Sync to Firebase
             </button>
-            <button className="btn btn-ghost btn-sm" onClick={() => refreshStudents(true)} title="Refresh list">
-              <MdRefresh /> {isSyncing ? 'Syncing...' : 'Refresh'}
-            </button>
-            <button
-              className="btn btn-ghost btn-sm"
-              style={{ color: '#dc2626', border: '1px solid #fca5a5', background: '#fef2f2' }}
-              onClick={handleDeleteAllStudents}
-              title="Delete ALL candidate records from database & Cloud Firestore"
-            >
-              <MdDelete /> Delete All Records
-            </button>
-            <Link to="/admin/settings" className="btn btn-secondary btn-sm">
-              <MdFileUpload /> Import CSV / PDF
-            </Link>
+
+            <label className="btn btn-secondary btn-sm" style={{ cursor: 'pointer', margin: 0 }}>
+              <MdFileUpload /> Import CSV
+              <input
+                type="file"
+                accept=".csv"
+                style={{ display: 'none' }}
+                onChange={(e) => handleCSVImport(e, 'student')}
+              />
+            </label>
+
             <button className="btn btn-primary btn-sm" onClick={handleOpenAddModal}>
               <MdPersonAdd /> Add Student
+            </button>
+
+            <button className="btn btn-secondary btn-sm" onClick={handleDeleteAllStudents} title="Clear all students">
+              <MdDelete /> Clear All
             </button>
           </div>
         </div>
 
-        {/* Status Notice Alert */}
         {statusNotice && (
-          <div
-            style={{
-              padding: '0.75rem 1rem',
-              marginBottom: '1rem',
-              borderRadius: '6px',
-              background: statusNotice.type === 'error' ? '#fef2f2' : '#f0fdf4',
-              border: statusNotice.type === 'error' ? '1px solid #fecaca' : '1px solid #bbf7d0',
-              color: statusNotice.type === 'error' ? '#991b1b' : '#15803d',
-              fontSize: '0.85rem',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              fontWeight: 500,
-            }}
-          >
-            <MdCheckCircle style={{ fontSize: '1.2rem' }} /> {statusNotice.msg}
+          <div className={`alert alert-${statusNotice.type === 'error' ? 'error' : 'success'}`} style={{ marginBottom: '1rem' }}>
+            {statusNotice.msg}
           </div>
         )}
 
-        {/* Filters */}
-        <div className={styles.toolbar}>
-          <div className={styles.searchWrap}>
-            <MdSearch className={styles.searchIcon} />
+        {/* Division Grid Selector */}
+        <div style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
+            <h3 style={{ fontSize: '1.05rem', fontWeight: 700, fontFamily: 'var(--font-display)' }}>
+              Division Cohort Grid
+            </h3>
+            {selectedDivisionFilter !== 'all' && (
+              <button className="btn btn-secondary btn-sm" onClick={() => setSelectedDivisionFilter('all')}>
+                Show All Divisions
+              </button>
+            )}
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: '1rem' }}>
+            <div
+              onClick={() => setSelectedDivisionFilter('all')}
+              style={{
+                background: selectedDivisionFilter === 'all' ? 'var(--stamp-slate-bg)' : 'var(--surface-card)',
+                border: `1px solid ${selectedDivisionFilter === 'all' ? 'var(--primary-slate)' : 'var(--border-rule)'}`,
+                borderRadius: 'var(--radius-md)',
+                padding: '1rem',
+                cursor: 'pointer',
+                boxShadow: 'var(--shadow-sm)',
+              }}
+            >
+              <div style={{ fontSize: '0.8rem', fontWeight: 700, color: 'var(--primary-slate)', fontFamily: 'var(--font-mono)' }}>
+                ALL COHORTS
+              </div>
+              <div style={{ fontWeight: 700, fontSize: '1.1rem', margin: '0.25rem 0' }}>All Students</div>
+              <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>{students.length} Total Enrolled</div>
+            </div>
+
+            {divisions.map((div) => {
+              const { count, avgGpa } = getDivisionMetrics(div.id);
+              const isSelected = selectedDivisionFilter === div.id;
+              return (
+                <div
+                  key={div.id}
+                  onClick={() => setSelectedDivisionFilter(div.id)}
+                  style={{
+                    background: isSelected ? 'var(--stamp-slate-bg)' : 'var(--surface-card)',
+                    border: `1px solid ${isSelected ? 'var(--primary-slate)' : 'var(--border-rule)'}`,
+                    borderRadius: 'var(--radius-md)',
+                    padding: '1rem',
+                    cursor: 'pointer',
+                    boxShadow: 'var(--shadow-sm)',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 700, fontFamily: 'var(--font-mono)', color: 'var(--primary-slate)' }}>
+                      {div.code}
+                    </span>
+                    <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Sem {div.semester}</span>
+                  </div>
+                  <div style={{ fontWeight: 700, fontSize: '1rem', margin: '0.25rem 0' }}>{div.name}</div>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                    <span>{count} Students</span>
+                    <span>Avg GPA: {avgGpa}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Filter & Search Bar */}
+        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+          <div className="input-wrapper" style={{ flex: 1, minWidth: '240px' }}>
+            <MdSearch className="input-icon" />
             <input
-              className={styles.searchInput}
-              placeholder="Search by name, roll no, department..."
+              type="text"
+              className="form-input"
+              placeholder="Search candidate name, roll number, or department..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
             />
           </div>
-          <div className={styles.filterGroup}>
-            {['all', 'active', 'inactive'].map((f) => (
-              <button
-                key={f}
-                className={`${styles.filterBtn} ${filter === f ? styles.active : ''}`}
-                onClick={() => setFilter(f)}
-              >
-                {f.charAt(0).toUpperCase() + f.slice(1)}
-              </button>
-            ))}
-          </div>
         </div>
 
-        {/* Stats */}
-        <div className={styles.statRow}>
-          <div className={styles.stat}>
-            <span className={styles.statVal}>{students.length}</span>
-            <span className={styles.statKey}>Total</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statVal} style={{ color: 'var(--accent)' }}>
-              {students.filter((s) => s.status === 'active').length}
-            </span>
-            <span className={styles.statKey}>Active</span>
-          </div>
-          <div className={styles.stat}>
-            <span className={styles.statVal} style={{ color: 'var(--danger)' }}>
-              {students.filter((s) => s.status === 'inactive').length}
-            </span>
-            <span className={styles.statKey}>Inactive</span>
-          </div>
-        </div>
-
-        {/* Table */}
-        <div className={styles.tableWrap}>
-          <table className="data-table">
+        {/* Student Roster Table */}
+        <div className="table-responsive">
+          <table className="table">
             <thead>
               <tr>
-                <th>Student</th>
-                <th>Roll Number</th>
-                <th>Department</th>
-                <th>Semester</th>
-                <th>GPA</th>
-                <th>Status</th>
-                <th>Actions</th>
+                <th style={{ width: '130px', minWidth: '130px' }}>Roll Number</th>
+                <th style={{ minWidth: '180px' }}>Candidate Name</th>
+                <th style={{ width: '110px', minWidth: '110px' }}>Division</th>
+                <th style={{ minWidth: '210px' }}>Department</th>
+                <th style={{ width: '110px', minWidth: '110px' }}>Semester</th>
+                <th style={{ width: '90px', minWidth: '90px' }}>GPA</th>
+                <th style={{ width: '130px', minWidth: '130px' }}>Activation</th>
+                <th style={{ width: '100px', minWidth: '100px', textAlign: 'right' }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filtered.map((s, idx) => (
-                <tr key={s.id || s.rollNumber || idx}>
-                  <td>
-                    <div className={styles.studentCell}>
-                      <div className={styles.avatar}>{getInitials(s.name || 'ST')}</div>
-                      <div>
-                        <div className={styles.studentName}>{s.name}</div>
-                        <div className={styles.studentEmail}>{s.email}</div>
-                      </div>
-                    </div>
-                  </td>
-                  <td>
-                    <code className={styles.code}>{s.rollNumber}</code>
-                  </td>
-                  <td>{s.department || 'N/A'}</td>
-                  <td>Sem {s.semester || '5'}</td>
-                  <td>
-                    <span
-                      style={{
-                        color:
-                          (s.gpa || 0) >= 8.5
-                            ? 'var(--accent)'
-                            : (s.gpa || 0) >= 7
-                            ? 'var(--info)'
-                            : 'var(--warning)',
-                        fontWeight: 600,
-                      }}
-                    >
-                      {s.gpa || '8.0'}
-                    </span>
-                  </td>
-                  <td>
-                    <span className={`badge ${s.status === 'active' ? 'badge-accent' : 'badge-muted'}`}>
-                      {s.status || 'active'}
-                    </span>
-                  </td>
-                  <td>
-                    <div className={styles.actions}>
-                      <button
-                        className="btn btn-ghost btn-sm btn-icon"
-                        title="View Details"
-                        onClick={() => handleOpenViewModal(s)}
-                      >
-                        <MdVisibility />
-                      </button>
-                      <button
-                        className="btn btn-ghost btn-sm btn-icon"
-                        title="Edit / Change Data"
-                        onClick={() => handleOpenEditModal(s)}
-                      >
-                        <MdEdit />
-                      </button>
-                    </div>
+              {filtered.length === 0 ? (
+                <tr>
+                  <td colSpan="8" style={{ textAlign: 'center', color: 'var(--text-muted)', padding: '2.5rem' }}>
+                    No candidates found matching filters.
                   </td>
                 </tr>
-              ))}
+              ) : (
+                filtered.map((s) => (
+                  <tr key={s.id || s.rollNumber}>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-ink)' }}>
+                      {s.rollNumber}
+                    </td>
+                    <td style={{ fontWeight: 600, color: 'var(--text-ink)' }}>{s.name}</td>
+                    <td>
+                      <span className="badge badge-primary">
+                        {s.divisionId || 'DIV001'}
+                      </span>
+                    </td>
+                    <td style={{ color: 'var(--text-body)' }}>{s.department}</td>
+                    <td style={{ color: 'var(--text-body)' }}>Sem {s.semester}</td>
+                    <td style={{ fontFamily: 'var(--font-mono)', fontWeight: 600, color: 'var(--text-ink)' }}>
+                      {formatGPA(s.gpa)}
+                    </td>
+                    <td>
+                      <span className={`badge ${s.activated ? 'badge-success' : 'badge-warning'}`}>
+                        {s.activated ? 'ACTIVATED' : 'PENDING'}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: 'right' }}>
+                      <div style={{ display: 'flex', gap: '0.35rem', justifyContent: 'flex-end' }}>
+                        <button
+                          className="btn btn-ghost btn-sm btn-icon"
+                          onClick={() => handleOpenViewModal(s)}
+                          title="View Candidate Profile"
+                        >
+                          <MdVisibility size={17} />
+                        </button>
+                        <button
+                          className="btn btn-ghost btn-sm btn-icon"
+                          onClick={() => handleOpenEditModal(s)}
+                          title="Edit Candidate Details"
+                        >
+                          <MdEdit size={17} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
-          {filtered.length === 0 && (
-            <div className={styles.empty}>No students match your search.</div>
-          )}
         </div>
 
-        {/* Add / Edit Student Modal */}
+        {/* Edit / Add Modal */}
         {isEditModalOpen && (
-          <div className={styles.modalOverlay} onClick={() => setIsEditModalOpen(false)}>
-            <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.modalHeader}>
-                <div className={styles.modalTitle}>
-                  {isEditingExisting ? `Edit Candidate Record (${formData.rollNumber})` : 'Add New Candidate Record'}
-                </div>
-                <button
-                  className="btn btn-ghost btn-sm btn-icon"
-                  onClick={() => setIsEditModalOpen(false)}
-                >
+          <div className="modal-backdrop" onClick={() => setIsEditModalOpen(false)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>{isEditingExisting ? 'Edit Candidate Record' : 'Add New Candidate'}</h3>
+                <button className="btn btn-secondary btn-sm" onClick={() => setIsEditModalOpen(false)}>
                   <MdClose />
                 </button>
               </div>
-
               <form onSubmit={handleSaveStudent}>
-                <div className={styles.modalBody}>
-                  <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Roll Number</label>
-                      <input
-                        className={styles.formInput}
-                        value={formData.rollNumber}
-                        onChange={(e) => setFormData({ ...formData, rollNumber: e.target.value })}
-                        disabled={isEditingExisting}
-                        placeholder="e.g. CS2026001"
-                        required
-                      />
-                    </div>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Full Name</label>
-                      <input
-                        className={styles.formInput}
-                        value={formData.name}
-                        onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        placeholder="e.g. Ananya Sharma"
-                        required
-                      />
-                    </div>
-                  </div>
-
-                  <div className={styles.formGroup}>
-                    <label className={styles.formLabel}>Email Address</label>
+                <div className="modal-body">
+                  <div className="form-group">
+                    <label className="form-label">Roll Number</label>
                     <input
-                      type="email"
-                      className={styles.formInput}
-                      value={formData.email}
-                      onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                      placeholder="e.g. student@examlens.edu"
+                      type="text"
+                      className="form-input"
+                      value={formData.rollNumber}
+                      onChange={(e) => setFormData((p) => ({ ...p, rollNumber: e.target.value }))}
+                      disabled={isEditingExisting}
                       required
                     />
                   </div>
 
-                  <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Department</label>
-                      <select
-                        className={styles.formInput}
-                        value={formData.department}
-                        onChange={(e) => setFormData({ ...formData, department: e.target.value })}
-                      >
-                        <option value="Computer Science">Computer Science</option>
-                        <option value="Electronics">Electronics</option>
-                        <option value="Mechanical">Mechanical</option>
-                        <option value="Civil">Civil</option>
-                        <option value="Information Technology">Information Technology</option>
-                        <option value="Electrical">Electrical</option>
-                      </select>
-                    </div>
-
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Semester</label>
-                      <select
-                        className={styles.formInput}
-                        value={formData.semester}
-                        onChange={(e) => setFormData({ ...formData, semester: e.target.value })}
-                      >
-                        {[1, 2, 3, 4, 5, 6, 7, 8].map((sem) => (
-                          <option key={sem} value={sem}>
-                            Semester {sem}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+                  <div className="form-group">
+                    <label className="form-label">Full Name</label>
+                    <input
+                      type="text"
+                      className="form-input"
+                      value={formData.name}
+                      onChange={(e) => setFormData((p) => ({ ...p, name: e.target.value }))}
+                      required
+                    />
                   </div>
 
-                  <div className={styles.formGrid}>
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>GPA Score</label>
-                      <input
-                        type="number"
-                        step="0.1"
-                        min="0"
-                        max="10"
-                        className={styles.formInput}
-                        value={formData.gpa}
-                        onChange={(e) => setFormData({ ...formData, gpa: e.target.value })}
-                        required
-                      />
-                    </div>
+                  <div className="form-group">
+                    <label className="form-label">Official Email</label>
+                    <input
+                      type="email"
+                      className="form-input"
+                      value={formData.email}
+                      onChange={(e) => setFormData((p) => ({ ...p, email: e.target.value }))}
+                      required
+                    />
+                  </div>
 
-                    <div className={styles.formGroup}>
-                      <label className={styles.formLabel}>Account Status</label>
-                      <select
-                        className={styles.formInput}
-                        value={formData.status}
-                        onChange={(e) => setFormData({ ...formData, status: e.target.value })}
-                      >
-                        <option value="active">Active</option>
-                        <option value="inactive">Inactive</option>
-                      </select>
-                    </div>
+                  <div className="form-group">
+                    <label className="form-label">Assigned Division</label>
+                    <select
+                      className="form-input"
+                      value={formData.divisionId}
+                      onChange={(e) => setFormData((p) => ({ ...p, divisionId: e.target.value }))}
+                    >
+                      {divisions.map((d) => (
+                        <option key={d.id} value={d.id}>
+                          {d.code} - {d.name}
+                        </option>
+                      ))}
+                    </select>
                   </div>
                 </div>
 
-                <div className={styles.modalFooter}>
-                  <div>
-                    {isEditingExisting && (
-                      <button
-                        type="button"
-                        className="btn btn-ghost btn-sm"
-                        style={{ color: 'var(--danger)' }}
-                        onClick={() => handleDeleteStudent(formData.rollNumber)}
-                      >
-                        <MdDelete /> Delete Record
-                      </button>
-                    )}
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div className="modal-footer">
+                  {isEditingExisting && (
                     <button
                       type="button"
-                      className="btn btn-ghost btn-sm"
-                      onClick={() => setIsEditModalOpen(false)}
+                      className="btn btn-secondary"
+                      style={{ color: 'var(--stamp-red)' }}
+                      onClick={() => handleDeleteStudent(formData.rollNumber)}
                     >
-                      Cancel
+                      <MdDelete /> Delete
                     </button>
-                    <button type="submit" className="btn btn-primary btn-sm">
-                      <MdSave /> {isEditingExisting ? 'Save Changes' : 'Add Candidate'}
-                    </button>
-                  </div>
+                  )}
+                  <button type="button" className="btn btn-secondary" onClick={() => setIsEditModalOpen(false)}>
+                    Cancel
+                  </button>
+                  <button type="submit" className="btn btn-primary">
+                    <MdSave /> Save Student
+                  </button>
                 </div>
               </form>
             </div>
           </div>
         )}
 
-        {/* View Details Modal */}
+        {/* View Modal */}
         {isViewModalOpen && activeStudent && (
-          <div className={styles.modalOverlay} onClick={() => setIsViewModalOpen(false)}>
-            <div className={styles.modalCard} onClick={(e) => e.stopPropagation()}>
-              <div className={styles.modalHeader}>
-                <div className={styles.modalTitle}>Candidate Transcript Details</div>
-                <button
-                  className="btn btn-ghost btn-sm btn-icon"
-                  onClick={() => setIsViewModalOpen(false)}
-                >
+          <div className="modal-backdrop" onClick={() => setIsViewModalOpen(false)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-header">
+                <h3>Candidate Profile Detail</h3>
+                <button className="btn btn-secondary btn-sm" onClick={() => setIsViewModalOpen(false)}>
                   <MdClose />
                 </button>
               </div>
-
-              <div className={styles.modalBody}>
-                <div className={styles.viewDetailsList}>
-                  <div className={styles.viewDetailRow}>
-                    <span className={styles.viewDetailKey}>Full Name</span>
-                    <span className={styles.viewDetailVal}>{activeStudent.name}</span>
-                  </div>
-                  <div className={styles.viewDetailRow}>
-                    <span className={styles.viewDetailKey}>Roll Number</span>
-                    <code className={styles.code}>{activeStudent.rollNumber}</code>
-                  </div>
-                  <div className={styles.viewDetailRow}>
-                    <span className={styles.viewDetailKey}>Official Email</span>
-                    <span className={styles.viewDetailVal}>{activeStudent.email}</span>
-                  </div>
-                  <div className={styles.viewDetailRow}>
-                    <span className={styles.viewDetailKey}>Department</span>
-                    <span className={styles.viewDetailVal}>{activeStudent.department}</span>
-                  </div>
-                  <div className={styles.viewDetailRow}>
-                    <span className={styles.viewDetailKey}>Semester</span>
-                    <span className={styles.viewDetailVal}>Semester {activeStudent.semester}</span>
-                  </div>
-                  <div className={styles.viewDetailRow}>
-                    <span className={styles.viewDetailKey}>Academic GPA</span>
-                    <span className={styles.viewDetailVal}>{activeStudent.gpa} / 10.0</span>
-                  </div>
-                  <div className={styles.viewDetailRow}>
-                    <span className={styles.viewDetailKey}>Portal Activation Status</span>
-                    <span className={`badge ${activeStudent.activated ? 'badge-accent' : 'badge-muted'}`}>
-                      {activeStudent.activated ? 'Activated' : 'Pending Activation'}
-                    </span>
-                  </div>
-                </div>
+              <div className="modal-body">
+                <p><strong>Name:</strong> {activeStudent.name}</p>
+                <p><strong>Roll Number:</strong> {activeStudent.rollNumber}</p>
+                <p><strong>Email:</strong> {activeStudent.email}</p>
+                <p><strong>Division:</strong> {activeStudent.divisionId || 'DIV001'}</p>
+                <p><strong>Department:</strong> {activeStudent.department}</p>
+                <p><strong>Semester:</strong> {activeStudent.semester}</p>
+                <p><strong>GPA:</strong> {activeStudent.gpa || 3.5}</p>
+                <p><strong>Activation Status:</strong> {activeStudent.activated ? 'Activated' : 'Pending Activation'}</p>
               </div>
-
-              <div className={styles.modalFooter} style={{ justifyContent: 'flex-end' }}>
-                <button
-                  className="btn btn-secondary btn-sm"
-                  onClick={() => {
-                    setIsViewModalOpen(false);
-                    handleOpenEditModal(activeStudent);
-                  }}
-                >
-                  <MdEdit /> Edit Student Data
+              <div className="modal-footer">
+                <button className="btn btn-primary" onClick={() => setIsViewModalOpen(false)}>
+                  Close
                 </button>
               </div>
             </div>

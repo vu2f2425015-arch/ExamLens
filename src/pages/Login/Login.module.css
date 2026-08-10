@@ -40,7 +40,7 @@
   position: relative;
   z-index: 1;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   max-width: 680px;
 }
 
@@ -94,6 +94,47 @@
   letter-spacing: 0.04em;
 }
 
+/* Portal Tabs */
+.tabContainer {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  max-width: 860px;
+  width: 100%;
+}
+
+.portalTab {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.portalTab:hover {
+  color: var(--text-ink);
+  background: var(--surface-subtle);
+}
+
+.activeTab {
+  color: var(--text-ink);
+  background: var(--surface-card);
+  border-bottom: 2px solid var(--primary-slate);
+  box-shadow: var(--shadow-sm);
+}
+
 /* Cards layout */
 .cards {
   position: relative;
@@ -118,6 +159,10 @@
 }
 
 .studentCard {
+  border-right: 1px solid var(--border-rule);
+}
+
+.teacherCard {
   border-right: 1px solid var(--border-rule);
 }
 
@@ -151,6 +196,12 @@
   background: var(--stamp-green-bg);
   border-color: var(--stamp-green-border);
   color: var(--stamp-green);
+}
+
+.teacherIcon {
+  background: rgba(37, 99, 235, 0.1);
+  border-color: rgba(37, 99, 235, 0.2);
+  color: #2563eb;
 }
 
 .adminIcon {
@@ -266,10 +317,6 @@
   width: 1px;
 }
 
-.divText {
-  display: none;
-}
-
 /* Footer */
 .footer {
   position: relative;
@@ -284,11 +331,12 @@
 /* Responsive */
 @media (max-width: 680px) {
   .cards { flex-direction: column; }
-  .studentCard { border-right: none; border-bottom: 1px solid var(--border-rule); }
+  .studentCard, .teacherCard { border-right: none; border-bottom: 1px solid var(--border-rule); }
   .divider { display: none; }
+  .tabContainer { flex-direction: column; gap: 0.25rem; }
 }
 
-/* Student Account Activation UI Styles */
+/* Student & Teacher Account Activation UI Styles */
 .activationPrompt {
   margin-top: 1rem;
   padding-top: 0.75rem;
@@ -375,4 +423,3 @@
   gap: 0.5rem;
   font-weight: 500;
 }
-
