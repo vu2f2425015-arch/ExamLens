@@ -363,12 +363,16 @@ export async function authenticateTeacher(employeeIdOrEmail, password) {
     let emailToAuth = lowerInput;
     let empId = upperInput;
 
-    if (!cleanInput.includes('@')) {
-      const teacher = await getTeacher(upperInput);
-      if (teacher) {
-        emailToAuth = teacher.email;
-        empId = teacher.employeeId || upperInput;
-      }
+    let teacherRecord = await getTeacher(upperInput);
+    if (!teacherRecord && cleanInput.includes('@')) {
+      // Find teacher by email
+      const allTeachers = await getTeachers();
+      teacherRecord = allTeachers.find((t) => t.email.toLowerCase() === lowerInput);
+    }
+
+    if (teacherRecord) {
+      emailToAuth = teacherRecord.email;
+      empId = teacherRecord.employeeId || upperInput;
     }
 
     try {
@@ -377,7 +381,7 @@ export async function authenticateTeacher(employeeIdOrEmail, password) {
 
       let profileDoc = await getDoc(doc(db, 'teachers', empId));
       let profile = profileDoc.exists() ? profileDoc.data() : null;
-      if (!profile) profile = (await getTeacher(empId)) || {};
+      if (!profile) profile = teacherRecord || (await getTeacher(empId)) || {};
 
       return {
         id: profile.id || firebaseUser.uid,
@@ -392,19 +396,62 @@ export async function authenticateTeacher(employeeIdOrEmail, password) {
       };
     } catch (firebaseErr) {
       if (DEMO_BYPASS_ENABLED && password === 'student123') {
-        const teacher = await getTeacher(empId);
+        const teacher = teacherRecord || (await getTeacher(empId));
         if (teacher) {
-          return {
-            id: teacher.id || `TCH_${empId}`,
-            name: teacher.name,
-            email: teacher.email,
-            role: 'teacher',
-            department: teacher.department,
-            employeeId: teacher.employeeId,
-            assignedDivisionIds: teacher.assignedDivisionIds || [],
-            avatar: null,
-          };
+          // Attempt auto-provision in Firebase Auth
+          try {
+            let createdUser = null;
+            try {
+              const res = await createUserWithEmailAndPassword(auth, emailToAuth.toLowerCase(), password);
+              createdUser = res.user;
+            } catch (createErr) {
+              if (createErr.code === 'auth/email-already-in-use') {
+                try {
+                  const res = await signInWithEmailAndPassword(auth, emailToAuth.toLowerCase(), password);
+                  createdUser = res.user;
+                } catch (e) {
+                  // ignore
+                }
+              }
+            }
+
+            const teacherDocRef = doc(db, 'teachers', empId);
+            const updatedProfile = { ...teacher, activated: true, employeeId: empId };
+            await setDoc(teacherDocRef, updatedProfile, { merge: true });
+
+            return {
+              id: updatedProfile.id || (createdUser && createdUser.uid) || `TCH_${empId}`,
+              name: updatedProfile.name,
+              email: updatedProfile.email || emailToAuth,
+              role: 'teacher',
+              department: updatedProfile.department || 'Faculty',
+              employeeId: empId,
+              assignedDivisionIds: updatedProfile.assignedDivisionIds || [],
+              avatar: (createdUser && createdUser.photoURL) || null,
+              uid: (createdUser && createdUser.uid) || `TCH_${empId}`,
+            };
+          } catch (autoErr) {
+            console.warn('[Demo Faculty Auto-Provision Notice]', autoErr);
+            return {
+              id: teacher.id || `TCH_${empId}`,
+              name: teacher.name,
+              email: teacher.email,
+              role: 'teacher',
+              department: teacher.department,
+              employeeId: teacher.employeeId,
+              assignedDivisionIds: teacher.assignedDivisionIds || [],
+              avatar: null,
+            };
+          }
         }
+      }
+
+      if (
+        firebaseErr.code === 'auth/wrong-password' ||
+        firebaseErr.code === 'auth/user-not-found' ||
+        firebaseErr.code === 'auth/invalid-credential'
+      ) {
+        throw new Error('Invalid credentials. If this is your first time logging in, please activate your faculty account first.');
       }
       throw new Error(firebaseErr.message || 'Faculty authentication failed.');
     }
