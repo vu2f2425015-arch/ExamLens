@@ -34,6 +34,7 @@ import TeacherResults   from './pages/Teacher/TeacherResults';
 import TeacherProfile   from './pages/Teacher/TeacherProfile';
 import Attendance       from './pages/Teacher/Attendance';
 import QuestionBank     from './pages/Teacher/QuestionBank';
+import QuestionUpload   from './pages/Teacher/QuestionUpload';
 
 // Student Pages
 import StudentDashboard from './pages/Student/StudentDashboard';
@@ -94,6 +95,7 @@ export default function App() {
               <Route path="exams" element={<TeacherExams />} />
               <Route path="exams/new" element={<ExamAssignment />} />
               <Route path="questions" element={<QuestionBank />} />
+              <Route path="questions/upload" element={<QuestionUpload />} />
               <Route path="attendance" element={<Attendance />} />
               <Route path="alerts" element={<TeacherAlerts />} />
               <Route path="results" element={<TeacherResults />} />
