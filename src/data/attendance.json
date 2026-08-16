@@ -1,0 +1,112 @@
+[
+  {
+    "id": "ATT_001",
+    "divisionId": "DIV001",
+    "studentId": "STU001",
+    "studentName": "Arjun Sharma",
+    "rollNumber": "CS2021001",
+    "date": "2026-08-16",
+    "status": "Present",
+    "time": "10:05 AM",
+    "subject": "Data Structures"
+  },
+  {
+    "id": "ATT_002",
+    "divisionId": "DIV001",
+    "studentId": "STU002",
+    "studentName": "Priya Mehta",
+    "rollNumber": "CS2021002",
+    "date": "2026-08-16",
+    "status": "Present",
+    "time": "10:08 AM",
+    "subject": "Data Structures"
+  },
+  {
+    "id": "ATT_003",
+    "divisionId": "DIV001",
+    "studentId": "STU003",
+    "studentName": "Rohan Verma",
+    "rollNumber": "CS2021003",
+    "date": "2026-08-16",
+    "status": "Absent",
+    "time": null,
+    "subject": "Data Structures"
+  },
+  {
+    "id": "ATT_004",
+    "divisionId": "DIV001",
+    "studentId": "STU004",
+    "studentName": "Isha Patel",
+    "rollNumber": "CS2021004",
+    "date": "2026-08-16",
+    "status": "Late",
+    "time": "10:35 AM",
+    "subject": "Data Structures"
+  },
+  {
+    "id": "ATT_005",
+    "divisionId": "DIV001",
+    "studentId": "STU005",
+    "studentName": "Karan Singh",
+    "rollNumber": "CS2021005",
+    "date": "2026-08-16",
+    "status": "Present",
+    "time": "10:02 AM",
+    "subject": "Data Structures"
+  },
+  {
+    "id": "ATT_006",
+    "divisionId": "DIV001",
+    "studentId": "STU001",
+    "studentName": "Arjun Sharma",
+    "rollNumber": "CS2021001",
+    "date": "2026-08-15",
+    "status": "Present",
+    "time": "10:06 AM",
+    "subject": "Data Structures"
+  },
+  {
+    "id": "ATT_007",
+    "divisionId": "DIV001",
+    "studentId": "STU002",
+    "studentName": "Priya Mehta",
+    "rollNumber": "CS2021002",
+    "date": "2026-08-15",
+    "status": "Late",
+    "time": "10:40 AM",
+    "subject": "Data Structures"
+  },
+  {
+    "id": "ATT_008",
+    "divisionId": "DIV002",
+    "studentId": "STU006",
+    "studentName": "Maya Desai",
+    "rollNumber": "EC2021001",
+    "date": "2026-08-16",
+    "status": "Present",
+    "time": "09:58 AM",
+    "subject": "Digital Signal Processing"
+  },
+  {
+    "id": "ATT_009",
+    "divisionId": "DIV002",
+    "studentId": "STU007",
+    "studentName": "Aditya Kumar",
+    "rollNumber": "EC2021002",
+    "date": "2026-08-16",
+    "status": "Absent",
+    "time": null,
+    "subject": "Digital Signal Processing"
+  },
+  {
+    "id": "ATT_010",
+    "divisionId": "DIV002",
+    "studentId": "STU008",
+    "studentName": "Sneha Gupta",
+    "rollNumber": "EC2021003",
+    "date": "2026-08-16",
+    "status": "Present",
+    "time": "10:01 AM",
+    "subject": "Digital Signal Processing"
+  }
+]
