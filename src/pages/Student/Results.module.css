@@ -1,0 +1,137 @@
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1.25rem;
+}
+
+.card {
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-sm);
+  padding: 1.35rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.examName {
+  font-family: var(--font-display);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-ink);
+}
+
+.submittedAt {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-top: 0.15rem;
+}
+
+.gradeCircle {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  border: 2px solid;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.scoreRow {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.scoreMain { display: flex; align-items: baseline; }
+
+.scoreVal {
+  font-family: var(--font-mono);
+  font-size: 2.2rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-ink);
+}
+
+.scoreTotal {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--text-muted);
+  margin-left: 2px;
+}
+
+.percentage {
+  font-family: var(--font-mono);
+  font-size: 1.35rem;
+  font-weight: 700;
+  margin-left: auto;
+  color: var(--text-ink);
+}
+
+.progressBar {
+  height: 5px;
+  background: var(--surface-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border-rule);
+}
+
+.progressFill {
+  height: 100%;
+}
+
+.chartRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.statsGrid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.stat {
+  background: var(--surface-subtle);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-sm);
+  padding: 0.45rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+}
+
+.statIcon { font-size: 0.95rem; }
+
+.statVal {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-ink);
+}
+
+.statKey {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+}
+
+.empty { text-align: center; padding: 4rem 2rem; }
+.emptyIcon { font-size: 3.5rem; color: var(--text-disabled); margin-bottom: 1rem; }

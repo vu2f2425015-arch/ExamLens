@@ -1,0 +1,18 @@
+/* ============================================================
+   ExamLens Global Reset Baseline
+   ============================================================ */
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: var(--bg-paper, #F7F6F2);
+  color: var(--text-body, #2B3648);
+  font-family: var(--font-sans, 'IBM Plex Sans', sans-serif);
+}
+
+#root {
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}

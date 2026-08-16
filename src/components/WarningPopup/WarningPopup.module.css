@@ -1,0 +1,118 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 32, 66, 0.65);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.popup {
+  background: var(--surface-card);
+  border: 1px solid var(--stamp-ochre);
+  border-top: 5px solid var(--stamp-ochre);
+  border-radius: var(--radius-sm);
+  padding: 1.75rem;
+  max-width: 440px;
+  width: 90%;
+  text-align: center;
+  position: relative;
+  box-shadow: var(--shadow-lg);
+}
+
+.popup.critical {
+  border-color: var(--stamp-red);
+  border-top-color: var(--stamp-red);
+}
+
+.closeBtn {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  background: transparent;
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-sm);
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 0.2rem;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+}
+.closeBtn:hover { color: var(--text-ink); background: var(--surface-hover); }
+
+.iconWrap {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-sm);
+  background: var(--stamp-ochre-bg);
+  border: 1px solid var(--stamp-ochre-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.85rem;
+}
+
+.popup.critical .iconWrap {
+  background: var(--stamp-red-bg);
+  border-color: var(--stamp-red-border);
+}
+
+.icon {
+  font-size: 1.6rem;
+  color: var(--stamp-ochre);
+}
+
+.popup.critical .icon { color: var(--stamp-red); }
+
+.label {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--stamp-ochre);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 0.5rem;
+}
+
+.popup.critical .label { color: var(--stamp-red); }
+
+.message {
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-ink);
+  margin-bottom: 0.4rem;
+}
+
+.sub {
+  font-family: var(--font-sans);
+  font-size: 0.825rem;
+  color: var(--text-muted);
+  margin-bottom: 1rem;
+  line-height: 1.45;
+}
+
+.progressBar {
+  height: 4px;
+  background: var(--surface-subtle);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 1.25rem;
+  border: 1px solid var(--border-rule);
+}
+
+.progressFill {
+  height: 100%;
+  background: var(--stamp-ochre);
+}
+
+.popup.critical .progressFill {
+  background: var(--stamp-red);
+}
+
+.actionBtn {
+  width: 100%;
+  justify-content: center;
+}
