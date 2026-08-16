@@ -23,6 +23,7 @@ import {
   MdClass,
   MdAdd,
   MdCheckCircle,
+  MdLibraryBooks,
 } from 'react-icons/md';
 
 const adminLinks = [
@@ -43,6 +44,7 @@ const teacherLinks = [
   { to: '/teacher/divisions', icon: MdClass, label: 'My Divisions' },
   { to: '/teacher/exams', icon: MdAssignment, label: 'My Exams' },
   { to: '/teacher/exams/new', icon: MdAdd, label: 'Assign Exam' },
+  { to: '/teacher/questions', icon: MdLibraryBooks, label: 'Question Bank' },
   { to: '/teacher/attendance', icon: MdCheckCircle, label: 'Attendance' },
   { to: '/teacher/alerts', icon: MdWarning, label: 'Alerts & Monitoring' },
   { to: '/teacher/results', icon: MdBarChart, label: 'Results' },
