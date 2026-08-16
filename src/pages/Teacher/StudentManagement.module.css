@@ -1,0 +1,346 @@
+.divisionSelector {
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  display: flex;
+  align-items: flex-end;
+  gap: 1.5rem;
+}
+
+.divisionSelector.dark {
+  background: var(--surface-card-dark);
+  border-color: var(--border-rule-dark);
+}
+
+.selectorLabel {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  display: block;
+}
+
+.selectorInput {
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-sm);
+  background: var(--surface-input);
+  color: var(--text-primary);
+  font-size: 0.9375rem;
+  font-family: inherit;
+  min-width: 300px;
+}
+
+.selectorInput:focus {
+  outline: 2px solid var(--primary-slate);
+  outline-offset: 2px;
+}
+
+/* Division Info */
+.divisionInfo {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.divisionInfo.dark {
+}
+
+.infoCard {
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+}
+
+.infoCard.dark {
+  background: var(--surface-card-dark);
+  border-color: var(--border-rule-dark);
+}
+
+.infoTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-primary);
+}
+
+.infoDetail {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  margin: 0.25rem 0;
+}
+
+.statValue {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--primary-slate);
+  text-align: center;
+}
+
+.statLabel {
+  font-size: 0.875rem;
+  color: var(--text-muted);
+  text-align: center;
+  font-weight: 600;
+}
+
+/* Search Bar */
+.searchBar {
+  margin-bottom: 2rem;
+  max-width: 400px;
+}
+
+/* Table Section */
+.tableSection {
+  background: var(--surface-card);
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+
+.tableSection.dark {
+  background: var(--surface-card-dark);
+  border-color: var(--border-rule-dark);
+}
+
+.tableHeader {
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-rule);
+  background: var(--surface-elevated);
+}
+
+.tableSection.dark .tableHeader {
+  border-bottom-color: var(--border-rule-dark);
+  background: var(--surface-elevated-dark);
+}
+
+.tableTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.emptyState {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  padding: 3rem;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.emptyState svg {
+  opacity: 0.5;
+}
+
+.tableWrapper {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.table thead {
+  background: var(--surface-elevated);
+}
+
+.table th {
+  padding: 1rem 1.5rem;
+  text-align: left;
+  font-weight: 700;
+  color: var(--text-primary);
+  border-bottom: 1px solid var(--border-rule);
+}
+
+.table tbody tr {
+  border-bottom: 1px solid var(--border-rule);
+  transition: background 0.2s ease;
+}
+
+.table tbody tr:hover {
+  background: var(--surface-elevated);
+}
+
+.table td {
+  padding: 1rem 1.5rem;
+  color: var(--text-primary);
+}
+
+.rollNumber {
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--primary-slate);
+}
+
+.rollNumber code {
+  background: var(--surface-elevated);
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+}
+
+.studentName {
+  font-weight: 500;
+}
+
+.email {
+  color: var(--primary-slate);
+}
+
+.phone {
+  color: var(--text-muted);
+  font-size: 0.875rem;
+}
+
+/* Badge */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.badge.active {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--stamp-green);
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actionBtn {
+  padding: 0.5rem;
+  background: transparent;
+  border: 1px solid var(--border-rule);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.actionBtn:hover {
+  background: var(--primary-slate);
+  color: white;
+  border-color: var(--primary-slate);
+}
+
+.actionBtn.danger:hover {
+  background: var(--stamp-red);
+  border-color: var(--stamp-red);
+}
+
+/* Modal */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.modalContent {
+  background: var(--surface-card);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modalContent.dark {
+  background: var(--surface-card-dark);
+}
+
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--border-rule);
+}
+
+.modalContent.dark .modalHeader {
+  border-bottom-color: var(--border-rule-dark);
+}
+
+.modalTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-primary);
+}
+
+.modalBody {
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.modalFooter {
+  display: flex;
+  gap: 1rem;
+  justify-content: flex-end;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-rule);
+  margin-top: 1rem;
+}
+
+.modalContent.dark .modalFooter {
+  border-top-color: var(--border-rule-dark);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .divisionSelector {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .selectorInput {
+    min-width: unset;
+  }
+
+  .divisionInfo {
+    grid-template-columns: 1fr;
+  }
+
+  .table {
+    font-size: 0.8125rem;
+  }
+
+  .table th,
+  .table td {
+    padding: 0.75rem 0.875rem;
+  }
+
+  .actions {
+    flex-wrap: wrap;
+  }
+}

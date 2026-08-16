@@ -43,6 +43,7 @@ const adminLinks = [
 const teacherLinks = [
   { to: '/teacher/dashboard', icon: MdDashboard, label: 'Dashboard' },
   { to: '/teacher/divisions', icon: MdClass, label: 'My Divisions' },
+  { to: '/teacher/students', icon: MdPeople, label: 'Manage Students' },
   { to: '/teacher/exams', icon: MdAssignment, label: 'My Exams' },
   { to: '/teacher/exams/new', icon: MdAdd, label: 'Assign Exam' },
   { to: '/teacher/questions', icon: MdLibraryBooks, label: 'Question Bank' },
